@@ -1,0 +1,58 @@
+# Local development stack for ActionCloud Phase 1.
+#
+# Everything here mirrors a managed AWS service, so the same application code
+# runs in both places:
+#
+#   postgres (pgvector)  ->  Amazon RDS for PostgreSQL
+#   localstack (sqs)     ->  Amazon SQS
+#
+# Start with:  docker compose up -d
+# Tear down:   docker compose down -v      (-v also wipes the data volume)
+
+services:
+  postgres:
+    # pgvector/pgvector ships Postgres with the vector extension preinstalled,
+    # which saves compiling it yourself. Phase 1 only uses plain SQL, but the
+    # extension needs to exist now so Phase 2 embeddings need no migration.
+    image: pgvector/pgvector:pg16
+    container_name: actioncloud-postgres
+    environment:
+      POSTGRES_USER: actioncloud
+      POSTGRES_PASSWORD: actioncloud
+      POSTGRES_DB: actioncloud
+    ports:
+      # Host port 5433, not 5432. A Postgres installed natively on the machine
+      # (Postgres.app, Homebrew) will already hold 5432, and connections would
+      # silently reach *that* server instead of this container — producing a
+      # baffling `role "actioncloud" does not exist` even though the role plainly
+      # exists inside the container. Left side is the host, right side is the
+      # container, which is unchanged.
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Files in this directory run automatically on first boot, in filename
+      # order. This is why the migration is named 001_init.sql.
+      - ./sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U actioncloud -d actioncloud"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  localstack:
+    # Emulates AWS locally. We only need SQS in Phase 1.
+    image: localstack/localstack:3
+    container_name: actioncloud-localstack
+    environment:
+      SERVICES: sqs
+      DEBUG: "0"
+    ports:
+      - "4566:4566"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:4566/_localstack/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:

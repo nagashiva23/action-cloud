@@ -1,0 +1,19 @@
+# ActionCloud — Phase 1 dependencies
+
+# API
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+
+# Postgres
+psycopg[binary,pool]==3.2.3
+
+# AWS (SQS, and S3 later)
+boto3==1.35.81
+
+# Config
+python-dotenv==1.0.1
+
+# Testing
+pytest==8.3.4
+httpx==0.28.1
