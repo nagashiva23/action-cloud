@@ -56,6 +56,9 @@ logs:
 psql:
 	docker compose exec postgres psql -U actioncloud -d actioncloud
 
+mcp:
+	PYTHONPATH=src ./.venv/bin/python -m actioncloud.mcp_server
+
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null || true

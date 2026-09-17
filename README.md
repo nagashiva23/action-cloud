@@ -119,6 +119,35 @@ Accessible via `GET /metrics`:
 
 ---
 
+## Model Context Protocol (MCP) Server Integration
+
+ActionCloud provides a native **MCP Stdio Server** (`mcp_server.py`), allowing IDEs (Cursor, Antigravity, Windsurf, VS Code) and Claude Desktop to access ActionCloud memory tools directly within your editor.
+
+### Configuration (`.cursor/mcp.json` or `claude_desktop_config.json`)
+
+```json
+{
+  "mcpServers": {
+    "actioncloud": {
+      "command": "python",
+      "args": ["-m", "actioncloud.mcp_server"],
+      "env": {
+        "PYTHONPATH": "src"
+      }
+    }
+  }
+}
+```
+
+### Exposed MCP Tools
+
+1. `search_fleet_memory(query, limit)` : Search ActionCloud shared memory for past solutions and workflows.
+2. `store_experience(task, action, result, success, problem, solution)` : Submit new task experiences.
+3. `report_memory_reuse(experience_id, success)` : Report reuse outcome and trigger governance evaluation.
+4. `get_fleet_metrics()` : Retrieve system-wide token savings and governance analytics.
+
+---
+
 ## Quickstart & Verification
 
 ### Prerequisites
