@@ -13,6 +13,7 @@ ActionCloud enables autonomous agent fleets to share procedural knowledge and el
 | **API & Core** | Python 3.11+, FastAPI, Uvicorn, Pydantic v2 | High-performance asynchronous REST API and data validation |
 | **Storage & Search** | PostgreSQL 16, pgvector, Full-Text Search (FTS) | Relational datastore with dense 1536-dim vector similarity and keyword ranking |
 | **Messaging** | Amazon SQS, LocalStack | Decoupled asynchronous queue processing (LocalStack for offline dev) |
+| **IDE Integration** | Model Context Protocol (MCP), `mcp_server.py` | Native IDE and desktop assistant integration (Cursor, Antigravity, Claude Desktop) |
 | **LLM & Embeddings** | Anthropic Claude API, Google Gemini API, boto3 | Model providers and official AWS SDK integration |
 | **DevOps & Hosting** | Docker, Docker Compose, AWS App Runner, AWS ECS Fargate, AWS RDS | Container orchestration, managed cloud web services, and serverless compute |
 | **Testing** | Pytest, HTTPX | Unit testing and HTTP client end-to-end verification |
