@@ -1,12 +1,3 @@
-"""
-Configuration, driven entirely by environment variables.
-
-The point of this file: the same code runs against LocalStack on your laptop
-and against real AWS, with no code changes — only env vars differ. That is what
-lets you debug locally (fast, free) and then deploy something already known to
-work, instead of debugging inside the cloud.
-"""
-
 from __future__ import annotations
 
 import os
@@ -15,15 +6,6 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Load .env before Settings is constructed, or every value below silently falls
-# back to its default.
-#
-# This is not a cosmetic detail. If AWS_ENDPOINT_URL is missing, boto3 does not
-# fail loudly — it assumes you meant *real* AWS and goes looking for real
-# credentials. With credentials present on the machine it would happily create a
-# real SQS queue and start billing you, while you believed you were running
-# locally. Explicit path (not a cwd search) so this works no matter which
-# directory a script is launched from.
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 load_dotenv(_PROJECT_ROOT / ".env")
 

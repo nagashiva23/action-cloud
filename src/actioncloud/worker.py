@@ -1,18 +1,3 @@
-"""
-Stub worker — Phase 1 queue consumer.
-
-All it does is read events and persist raw experiences. No LLM extraction, no
-embeddings, no graph. That is the point: this proves the asynchronous path
-works before anything that can fail *subtly* is added to it.
-
-In Phase 2 this file splits into three workers (Memory / Embedding / Graph)
-consuming the same queue. The dispatch structure below is already shaped for
-that, so adding them is a matter of registering handlers rather than rewriting
-the loop.
-
-Run with:  python -m actioncloud.worker
-"""
-
 from __future__ import annotations
 
 import logging
@@ -34,14 +19,6 @@ _running = True
 
 
 def _stop(signum, frame):  # noqa: ARG001
-    """
-    Graceful shutdown.
-
-    Without this, Ctrl-C mid-message means the message is neither processed nor
-    acknowledged — it just reappears after the visibility timeout. Harmless
-    here, but the habit matters once workers do expensive LLM calls you would
-    rather not pay for twice.
-    """
     global _running
     log.info("shutdown signal received — finishing current batch")
     _running = False
@@ -55,57 +32,59 @@ signal.signal(signal.SIGTERM, _stop)
 # Handlers
 # --------------------------------------------------------------------------
 
-def assign_initial_tier(exp: Experience) -> tuple[MemoryTier, str]:
-    """
-    Placeholder for the Memory Judge — REPLACE IN PHASE 2.
-
-    The real Judge weighs provenance, confidence, and observed success rate
-    across repeated reuse. This stand-in does something far cruder: it promotes
-    any successful experience straight to SHARED, and leaves failures private.
-
-    Why a stand-in is needed at all: the schema defaults every experience to
-    PRIVATE (untrusted until proven), and search correctly refuses to show one
-    agent's private memory to another. With no Judge, nothing would ever leave
-    PRIVATE and cross-agent retrieval — the entire point of the system — could
-    never happen. So Phase 1 needs *something* occupying this slot.
-
-    Be clear-eyed about what this costs: promoting on first success is exactly
-    the ungoverned behaviour the proposal argues against, because one wrong
-    solution propagates fleet-wide unchallenged. That is acceptable only while
-    Phase 1 is testing plumbing, and it is the first thing Phase 2 must fix.
-    """
-    if exp.success:
-        return MemoryTier.SHARED, "phase-1 placeholder: promoted on first success"
-    return MemoryTier.PRIVATE, "phase-1 placeholder: failures stay private"
+from .embeddings import get_embedding_provider
+from .extractor import ExperienceExtractor
+from .judge import MemoryJudge
 
 
 def handle_experience_created(payload: dict[str, Any]) -> None:
     """
-    Persist a newly submitted experience and assign its initial tier.
-
-    Phase 2 will extend this to: extract knowledge + workflow via LLM, enqueue
-    embedding and graph jobs, then hand off to the real Memory Judge.
+    Phase 2 processing:
+      1. Assign initial tier and confidence via MemoryJudge.
+      2. Insert experience into DB.
+      3. Extract procedural workflow and knowledge triples via LLM out-of-band.
+      4. Generate text embedding vector.
+      5. Persist extractions & vector to DB.
+      6. Audit tier decision in tier_transitions.
     """
     exp = Experience(**payload)
 
-    tier, reason = assign_initial_tier(exp)
+    tier, confidence, reason = MemoryJudge.assign_initial_tier(exp)
     exp.tier = tier
+    exp.confidence = confidence
 
-    db.insert_experience(exp)  # idempotent — safe under at-least-once redelivery
+    # 1. Primary insert (idempotent)
+    db.insert_experience(exp)
 
-    # Audit the decision separately from the row it affects. The proposal
-    # promises auditability of what was shared and by whom; that is only
-    # credible if the decision trail survives independently of the record.
+    # 2. Extract workflow & knowledge triples via LLM
+    extractor = ExperienceExtractor()
+    workflow, triples = extractor.extract(exp)
+
+    # 3. Compute vector embedding
+    embedder = get_embedding_provider()
+    embedding_text = f"{exp.task} {exp.problem or ''} {exp.solution or ''} {exp.result}"
+    embedding = embedder.embed(embedding_text)
+
+    # 4. Save extractions & embedding
+    db.update_experience_extractions(
+        experience_id=exp.id,
+        workflow=workflow,
+        knowledge_triples=triples,
+        embedding=embedding,
+        embedded=True,
+    )
+
+    # 5. Record tier transition audit log
     db.record_tier_transition(
         experience_id=exp.id,
         to_tier=tier,
         reason=reason,
         from_tier=None,
-        decided_by="phase1-placeholder-judge",
+        decided_by="memory_judge_v2",
     )
 
     log.info(
-        "stored %s | %s/%s | success=%s | tier=%s | %d tokens",
+        "stored & enriched %s | %s/%s | success=%s | tier=%s | %d tokens",
         exp.id,
         exp.agent_role.value,
         exp.system.value,

@@ -1,19 +1,3 @@
-"""
-Queue abstraction over SQS (real AWS or LocalStack).
-
-Why a queue at all — this is the single most important architectural decision
-in Phase 1, so it is worth stating plainly:
-
-The write path does real work (in Phase 2: an LLM extraction call, embedding
-generation, graph writes). That is seconds per experience. If an agent had to
-wait for it, then *using ActionCloud would make every agent slower* — and the
-latency hypothesis (H3) would be dead on arrival, defeated by your own
-architecture rather than by the idea.
-
-So the API accepts the experience, puts it on the queue, and returns 202
-immediately. The agent moves on. Workers do the expensive part out of band.
-"""
-
 from __future__ import annotations
 
 import json

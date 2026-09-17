@@ -1,18 +1,3 @@
-"""
-Concrete agent roles.
-
-Phase 1 implements two (coding, research) — enough to prove the loop works with
-two distinct identities writing into shared memory. The remaining four arrive in
-Phase 2, and each is a four-line subclass.
-
-Agents are deliberately unsophisticated. From the proposal (Section 9.2): their
-essential property is that they interact *honestly* with shared memory — search
-before, store after, report real numbers. A cleverer agent would make the
-experiment harder to interpret, not better, because you would no longer know
-whether an improvement came from the memory layer or from the agent's own
-reasoning.
-"""
-
 from __future__ import annotations
 
 from ..schema import AgentRole
@@ -37,16 +22,46 @@ class ResearchAgent(Agent):
     )
 
 
-# --- Phase 2 ---------------------------------------------------------------
-# class TestingAgent(Agent):       role = AgentRole.TESTING
-# class DeploymentAgent(Agent):    role = AgentRole.DEPLOYMENT
-# class DocumentationAgent(Agent): role = AgentRole.DOCUMENTATION
-# class DataAnalysisAgent(Agent):  role = AgentRole.DATA_ANALYSIS
+class TestingAgent(Agent):
+    __test__ = False
+    role = AgentRole.TESTING
+    system_prompt = (
+        "You are a testing agent. Write comprehensive test cases and verify failure modes. "
+        "If prior experience is provided, build on established test patterns."
+    )
+
+
+class DeploymentAgent(Agent):
+    role = AgentRole.DEPLOYMENT
+    system_prompt = (
+        "You are a deployment agent. Automate containerization and infrastructure setups. "
+        "If prior experience is provided, reuse proven configuration parameters."
+    )
+
+
+class DocumentationAgent(Agent):
+    role = AgentRole.DOCUMENTATION
+    system_prompt = (
+        "You are a documentation agent. Write clear, structured documentation and runbooks. "
+        "If prior experience is provided, synthesize existing knowledge."
+    )
+
+
+class DataAnalysisAgent(Agent):
+    role = AgentRole.DATA_ANALYSIS
+    system_prompt = (
+        "You are a data analysis agent. Query metrics and evaluate experimental statistical results. "
+        "If prior experience is provided, build on previous analysis queries."
+    )
 
 
 ROLE_REGISTRY: dict[AgentRole, type[Agent]] = {
     AgentRole.CODING: CodingAgent,
     AgentRole.RESEARCH: ResearchAgent,
+    AgentRole.TESTING: TestingAgent,
+    AgentRole.DEPLOYMENT: DeploymentAgent,
+    AgentRole.DOCUMENTATION: DocumentationAgent,
+    AgentRole.DATA_ANALYSIS: DataAnalysisAgent,
 }
 
 

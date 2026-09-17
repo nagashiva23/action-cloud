@@ -1,22 +1,3 @@
-"""
-ActionCloud — Experience Object schema.
-
-This is the keystone of the whole system: every worker, every storage backend,
-and every metric in the Phase 3 experiment reads from this shape. Treat changes
-here as breaking changes and bump SCHEMA_VERSION.
-
-Three models, deliberately separated:
-
-  ExperienceCreate   what an agent submits when it finishes a task
-  Experience         what ActionCloud stores (adds governance + provenance)
-  ExperienceResult   what the retrieval path returns to an agent
-
-Agents can never set governance fields (tier, confidence, reuse counts). Those
-are assigned by the Memory Judge in Phase 2. Keeping them out of the create
-model means an agent cannot promote its own memory, which is the entire point
-of having governance at all.
-"""
-
 from __future__ import annotations
 
 import uuid

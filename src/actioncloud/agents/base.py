@@ -1,23 +1,3 @@
-"""
-Base agent.
-
-The single most important design decision in this file: **System A (baseline)
-and System B (ActionCloud) are the same class with one flag flipped.**
-
-    Agent(..., use_memory=False)   -> System A, stateless
-    Agent(..., use_memory=True)    -> System B, memory-enabled
-
-They share the prompt construction, the measurement code, the storage call, and
-the error handling. The only divergence is whether `search()` runs and whether
-its results are injected into the prompt.
-
-This matters for the experiment's validity. If the two arms were separate
-implementations, any measured difference could be an artifact of one being
-written more carefully than the other, and a sceptical evaluator would be right
-to say so. With one code path, the difference is attributable to the memory
-layer because there is nothing else it could be attributable to.
-"""
-
 from __future__ import annotations
 
 import logging

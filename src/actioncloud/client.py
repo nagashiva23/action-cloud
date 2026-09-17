@@ -105,6 +105,21 @@ class ActionCloudClient:
         resp.raise_for_status()
         return resp.json()
 
+    def report_reuse(self, experience_id: uuid.UUID, success: bool) -> dict[str, Any]:
+        """
+        Report that an experience was reused by an agent, recording outcome.
+        """
+        try:
+            resp = self._http.post(
+                f"/experiences/{experience_id}/reuse",
+                json={"success": success, "agent_id": self.agent_id},
+            )
+            resp.raise_for_status()
+            return resp.json()
+        except httpx.HTTPError as e:
+            log.warning("report_reuse failed (%s)", e)
+            return {}
+
     # -- writes ------------------------------------------------------------
 
     def store(

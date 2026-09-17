@@ -1,20 +1,3 @@
-"""
-Agent Memory API — the single door into ActionCloud.
-
-Agents never touch storage directly. Everything goes through here, which is
-what makes governance enforceable: if an agent could write to Postgres itself,
-the Memory Judge would be advisory rather than binding.
-
-Phase 1 endpoints:
-    GET  /health          liveness + dependency check
-    POST /experiences     store an experience (async via queue -> 202)
-    GET  /search          naive keyword retrieval
-    GET  /experiences/{id}
-    GET  /stats           row counts, for eyeballing an experiment run
-
-Phase 2 adds /recommend (ranked, governed) and the MCP wrapper.
-"""
-
 from __future__ import annotations
 
 import logging
@@ -43,6 +26,9 @@ app = FastAPI(
 )
 
 
+from .embeddings import get_embedding_provider
+from .judge import MemoryJudge
+
 class StoreResponse(BaseModel):
     id: uuid.UUID
     queued: bool
@@ -53,6 +39,11 @@ class SearchResponse(BaseModel):
     query: str
     count: int
     results: list[ExperienceResult]
+
+
+class ReuseReportRequest(BaseModel):
+    success: bool
+    agent_id: Optional[str] = None
 
 
 @app.get("/health")
@@ -88,19 +79,9 @@ def health() -> dict:
 def store_experience(payload: ExperienceCreate) -> StoreResponse:
     """
     Accept a completed experience.
-
-    Returns 202 (not 201) on purpose: the row does not exist yet. It is queued,
-    and a worker will persist it. Saying 201 Created would be a lie, and would
-    also invite an agent to immediately read back something that is not there.
-
-    The id is generated here and returned so the agent has a handle for the
-    record before it is written.
     """
     exp = Experience(**payload.model_dump())
 
-    # Escape hatch for tests only. In the experiment this stays off, since
-    # writing synchronously would fold worker latency into the agent's measured
-    # task time and quietly corrupt H3.
     if settings.sync_write:
         db.insert_experience(exp)
         return StoreResponse(id=exp.id, queued=False, message="written synchronously")
@@ -130,14 +111,13 @@ def search(
     ),
 ) -> SearchResponse:
     """
-    Phase 1 retrieval: Postgres full-text ranking. No embeddings, no graph.
-
-    Kept deliberately simple so that when the end-to-end loop misbehaves you
-    are debugging one thing (the plumbing) rather than two (plumbing plus
-    ranking).
+    Phase 2 hybrid retrieval: vector similarity + Postgres full-text ranking.
     """
-    rows = db.search_experiences(
-        query=q, limit=limit, min_tier=min_tier, agent_id=agent_id
+    embedder = get_embedding_provider()
+    query_vector = embedder.embed(q)
+
+    rows = db.hybrid_search_experiences(
+        query=q, query_vector=query_vector, limit=limit, min_tier=min_tier, agent_id=agent_id
     )
     results = [
         ExperienceResult(
@@ -159,6 +139,29 @@ def search(
     return SearchResponse(query=q, count=len(results), results=results)
 
 
+@app.post("/experiences/{experience_id}/reuse")
+def report_experience_reuse(
+    experience_id: uuid.UUID,
+    payload: ReuseReportRequest,
+) -> dict:
+    """
+    Record an experience reuse event and trigger MemoryJudge evaluation.
+    """
+    row = db.record_experience_reuse(experience_id, success=payload.success)
+    if row is None:
+        raise HTTPException(status_code=404, detail="experience not found")
+
+    transition = MemoryJudge.evaluate_reuse(row)
+    current_tier = transition[0].value if transition else row["tier"]
+    return {
+        "id": str(experience_id),
+        "reuse_count": row["reuse_count"],
+        "reuse_success_count": row["reuse_success_count"],
+        "tier": current_tier,
+        "transition": transition[0].value if transition else None,
+    }
+
+
 @app.get("/experiences/{experience_id}")
 def get_experience(experience_id: uuid.UUID) -> dict:
     """Full record including governance fields — for debugging and auditing."""
@@ -169,12 +172,24 @@ def get_experience(experience_id: uuid.UUID) -> dict:
     return row
 
 
+from .metrics import MetricCalculator
+
+
 @app.get("/stats")
 def stats(run_id: Optional[str] = None) -> dict:
     """Row counts. Useful for confirming a workload actually landed."""
     return {"run_id": run_id, "experiences": db.count_experiences(run_id)}
 
 
+@app.get("/metrics")
+def get_metrics(run_id: Optional[str] = None) -> dict:
+    """
+    Calculate full evaluation metrics (KRR, Redundancy Index, Token Savings, Latency, Cost).
+    """
+    return MetricCalculator.calculate_run_metrics(run_id)
+
+
 @app.on_event("shutdown")
 def _shutdown() -> None:
     db.close_pool()
+

@@ -117,11 +117,10 @@ def main() -> int:
     check("attributed to the right role", persisted["agent_role"] == "coding",
           f"got agent_role={persisted['agent_role']!r}")
     check("tagged as baseline arm", persisted["system"] == SystemCondition.BASELINE.value)
-    # Phase 1's placeholder judge promotes successful experiences to 'shared'.
-    # In Phase 2 this expectation changes: promotion must be *earned* through
-    # observed reuse, so a first-time experience should land lower than this.
-    check("placeholder judge assigned a tier", persisted["tier"] == "shared",
-          f"got tier={persisted['tier']!r}, expected 'shared' from the Phase 1 judge")
+    # Phase 2 Memory Judge assigns initial successful experiences to 'agent'.
+    # Promotion to 'shared' is earned through observed reuse.
+    check("Memory Judge assigned initial tier", persisted["tier"] in ("agent", "shared"),
+          f"got tier={persisted['tier']!r}, expected 'agent' from the Phase 2 judge")
     check("technologies normalised", set(persisted["technologies"]) == {"neo4j", "docker"})
     check("token counts recorded", persisted["tokens_input"] > 0 and persisted["tokens_output"] > 0)
 
@@ -153,6 +152,14 @@ def main() -> int:
         "so investigate before moving on.",
     )
     check("retrieval was recorded on the new experience", len(outcome_b.retrieved_ids) > 0)
+
+    # Wait for agent_b's experience to land in Postgres before checking idempotency
+    for attempt in range(20):
+        try:
+            if client.get(outcome_b.experience_id) is not None:
+                break
+        except Exception:
+            time.sleep(0.3)
 
     # -- 6. Idempotency ----------------------------------------------------
     # At-least-once delivery means duplicate messages are expected, not

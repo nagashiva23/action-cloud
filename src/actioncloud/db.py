@@ -1,12 +1,3 @@
-"""
-Database layer.
-
-Deliberately thin — raw SQL through psycopg rather than an ORM. The queries in
-Phase 2 (vector similarity, graph joins) and Phase 3 (metric aggregations) are
-ones an ORM would only get in the way of, and being able to paste a query
-straight into psql while debugging is worth more here than model classes.
-"""
-
 from __future__ import annotations
 
 import uuid
@@ -140,6 +131,110 @@ def record_tier_transition(
         conn.commit()
 
 
+def update_experience_tier(
+    experience_id: uuid.UUID,
+    tier: MemoryTier,
+    confidence: float,
+) -> None:
+    """Update tier and confidence assigned by the Memory Judge."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE experiences
+                SET tier = %s::memory_tier, confidence = %s, updated_at = now()
+                WHERE id = %s
+                """,
+                (tier.value, confidence, experience_id),
+            )
+        conn.commit()
+
+
+def record_experience_reuse(
+    experience_id: uuid.UUID,
+    success: bool,
+) -> Optional[dict[str, Any]]:
+    """Increment reuse_count and (if success) reuse_success_count. Returns updated record."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            if success:
+                cur.execute(
+                    """
+                    UPDATE experiences
+                    SET reuse_count = reuse_count + 1,
+                        reuse_success_count = reuse_success_count + 1,
+                        updated_at = now()
+                    WHERE id = %s
+                    RETURNING *
+                    """,
+                    (experience_id,),
+                )
+            else:
+                cur.execute(
+                    """
+                    UPDATE experiences
+                    SET reuse_count = reuse_count + 1,
+                        updated_at = now()
+                    WHERE id = %s
+                    RETURNING *
+                    """,
+                    (experience_id,),
+                )
+            row = cur.fetchone()
+        conn.commit()
+    return row
+
+
+def update_experience_extractions(
+    experience_id: uuid.UUID,
+    workflow: dict | None,
+    knowledge_triples: list[dict],
+    embedding: list[float] | None = None,
+    embedded: bool = True,
+) -> None:
+    """Save extracted workflow, knowledge triples, and embedding vector."""
+    import json
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            if embedding:
+                cur.execute(
+                    """
+                    UPDATE experiences
+                    SET workflow = %s::jsonb,
+                        knowledge_triples = %s::jsonb,
+                        embedding = %s::vector,
+                        embedded = %s,
+                        updated_at = now()
+                    WHERE id = %s
+                    """,
+                    (
+                        json.dumps(workflow) if workflow else None,
+                        json.dumps(knowledge_triples),
+                        str(embedding),
+                        embedded,
+                        experience_id,
+                    ),
+                )
+            else:
+                cur.execute(
+                    """
+                    UPDATE experiences
+                    SET workflow = %s::jsonb,
+                        knowledge_triples = %s::jsonb,
+                        embedded = %s,
+                        updated_at = now()
+                    WHERE id = %s
+                    """,
+                    (
+                        json.dumps(workflow) if workflow else None,
+                        json.dumps(knowledge_triples),
+                        embedded,
+                        experience_id,
+                    ),
+                )
+        conn.commit()
+
+
 # --------------------------------------------------------------------------
 # Reads
 # --------------------------------------------------------------------------
@@ -151,11 +246,6 @@ def get_experience(experience_id: uuid.UUID) -> Optional[dict[str, Any]]:
 
 
 # Phase 1 retrieval: Postgres full-text search, ranked by ts_rank.
-#
-# This is intentionally the dumb version. It gives the pipeline something real
-# to return so the end-to-end loop is testable, and it doubles as a control in
-# Phase 2 — you can compare hybrid retrieval against it to show the graph and
-# vector layers actually earn their complexity.
 SEARCH_SQL = """
 SELECT *,
        ts_rank(
@@ -169,14 +259,47 @@ WHERE to_tsvector('english',
           coalesce(task, '') || ' ' || coalesce(problem, '') || ' ' ||
           coalesce(solution, '') || ' ' || coalesce(result, ''))
       @@ plainto_tsquery('english', %(query)s)
-  -- Never surface an experience that has been disproven and replaced.
   AND superseded_by IS NULL
-  -- Tier gate. In Phase 1 the default floor is 'private' (everything visible)
-  -- so the loop is easy to verify; Phase 2 raises it to 'shared' for
-  -- cross-agent reads, which is where governance starts to bite.
   AND tier >= %(min_tier)s::memory_tier
   AND (%(agent_id)s::text IS NULL OR tier > 'private'::memory_tier OR agent_id = %(agent_id)s)
 ORDER BY relevance DESC, created_at DESC
+LIMIT %(limit)s;
+"""
+
+
+HYBRID_SEARCH_SQL = """
+WITH fts_results AS (
+    SELECT id,
+           ts_rank(
+               to_tsvector('english',
+                   coalesce(task, '') || ' ' || coalesce(problem, '') || ' ' ||
+                   coalesce(solution, '') || ' ' || coalesce(result, '')),
+               plainto_tsquery('english', %(query)s)
+           ) AS fts_score
+    FROM experiences
+    WHERE to_tsvector('english',
+              coalesce(task, '') || ' ' || coalesce(problem, '') || ' ' ||
+              coalesce(solution, '') || ' ' || coalesce(result, ''))
+          @@ plainto_tsquery('english', %(query)s)
+),
+vector_results AS (
+    SELECT id,
+           (1 - (embedding <=> %(vector)s::vector)) AS vec_score
+    FROM experiences
+    WHERE embedding IS NOT NULL
+)
+SELECT e.*,
+       COALESCE(f.fts_score, 0.0) AS fts_score,
+       COALESCE(v.vec_score, 0.0) AS vec_score,
+       (COALESCE(f.fts_score, 0.0) + 0.5 * COALESCE(v.vec_score, 0.0)) AS relevance
+FROM experiences e
+LEFT JOIN fts_results f ON e.id = f.id
+LEFT JOIN vector_results v ON e.id = v.id
+WHERE e.superseded_by IS NULL
+  AND e.tier >= %(min_tier)s::memory_tier
+  AND (%(agent_id)s::text IS NULL OR e.tier > 'private'::memory_tier OR e.agent_id = %(agent_id)s)
+  AND (f.id IS NOT NULL OR v.id IS NOT NULL)
+ORDER BY relevance DESC, e.created_at DESC
 LIMIT %(limit)s;
 """
 
@@ -188,10 +311,7 @@ def search_experiences(
     agent_id: str | None = None,
 ) -> list[dict[str, Any]]:
     """
-    Naive keyword search over stored experiences (Phase 1).
-
-    `agent_id`, when given, lets an agent see its own private rows while still
-    excluding other agents' private ones.
+    Naive keyword search over stored experiences.
     """
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute(
@@ -204,6 +324,37 @@ def search_experiences(
             },
         )
         return cur.fetchall()
+
+
+def hybrid_search_experiences(
+    query: str,
+    query_vector: list[float] | None,
+    limit: int = 5,
+    min_tier: MemoryTier = MemoryTier.PRIVATE,
+    agent_id: str | None = None,
+) -> list[dict[str, Any]]:
+    """
+    Phase 2 hybrid retrieval: combines vector similarity (pgvector) and full-text ranking.
+    Falls back to text search if query_vector is None.
+    """
+    if not query_vector:
+        return search_experiences(query, limit=limit, min_tier=min_tier, agent_id=agent_id)
+
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            HYBRID_SEARCH_SQL,
+            {
+                "query": query,
+                "vector": str(query_vector),
+                "limit": limit,
+                "min_tier": min_tier.value,
+                "agent_id": agent_id,
+            },
+        )
+        results = cur.fetchall()
+        if not results:  # Fallback to plain keyword search if hybrid returns empty
+            return search_experiences(query, limit=limit, min_tier=min_tier, agent_id=agent_id)
+        return results
 
 
 def count_experiences(run_id: str | None = None) -> int:
@@ -222,3 +373,4 @@ def health_check() -> bool:
             return cur.fetchone() is not None
     except Exception:
         return False
+

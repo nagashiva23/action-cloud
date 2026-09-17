@@ -1,20 +1,3 @@
-"""
-LLM abstraction.
-
-The important decision here: Phase 1 defaults to a *mock* LLM. Verifying that
-store -> queue -> worker -> Postgres -> search works does not require a real
-model, and paying for API calls to test plumbing is a waste of both credits and
-time (mock calls are instant, so the feedback loop stays tight).
-
-The mock is deterministic — same task in, same output and same token counts
-out. That matters more than it sounds: it means your Phase 1 tests are
-repeatable, and it means you can build the whole measurement pipeline and
-sanity-check the arithmetic before any real variance enters the system.
-
-Phase 3 swaps in a real provider. Nothing else changes, because everything
-downstream depends only on the LLMResponse shape.
-"""
-
 from __future__ import annotations
 
 import hashlib
