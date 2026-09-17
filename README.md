@@ -172,17 +172,23 @@ make api
 make worker
 ```
 
-### Running Tests (Terminal 3)
+### Running Tests & Benchmarks
 
 ```bash
-# Run unit test suite (25 tests)
+# Run complete unit test suite (31 tests across Phase 1, Phase 2, and Phase 3)
 make test
 
-# Run Phase 1 pipeline verification (19 checks)
-./.venv/bin/python scripts/verify_e2e.py
+# Run Phase 1 end-to-end pipeline verification (19 checks)
+PYTHONPATH=src ./.venv/bin/python scripts/verify_e2e.py
 
 # Run Phase 2 governance & hybrid retrieval verification (16 checks)
-./.venv/bin/python scripts/verify_phase2_e2e.py
+PYTHONPATH=src ./.venv/bin/python scripts/verify_phase2_e2e.py
+
+# Run Phase 3 automated benchmark harness across 100 tasks (System A vs System B)
+PYTHONPATH=src ./.venv/bin/python scripts/run_benchmark.py --provider mock --limit 10
+
+# Generate empirical evaluation report (Knowledge Reuse Rate, Token Savings, Cost Savings)
+PYTHONPATH=src ./.venv/bin/python scripts/evaluate_results.py
 ```
 
 ### Inspect Database State
@@ -210,8 +216,9 @@ SELECT experience_id, from_tier, to_tier, reason FROM tier_transitions;
 
 ---
 
-## Roadmap — Phase 3
+## Roadmap & Status — Phase 1, 2 & 3 Complete
 
-- [ ] Connect production LLM providers (`AnthropicLLM` / `GeminiLLM`) via environment variable `LLM_PROVIDER`.
-- [ ] Run 100-task multi-agent benchmark workload across System A vs System B.
-- [ ] Deploy production infrastructure to AWS (RDS PostgreSQL `pgvector`, AWS SQS, AWS App Runner / ECS).
+- [x] Phase 1: Core Async Experience Ingestion & Search Engine (FastAPI, PostgreSQL pgvector, SQS, Worker).
+- [x] Phase 2: Memory Governance & Multi-Agent Role Registry (5-Tier Ladder, MemoryJudge, 6 Agent Roles, Hybrid Search).
+- [x] Phase 3: Multi-Provider LLM Integration, Native MCP Server, 100-Task Benchmark Harness & Empirical Evaluator.
+- [ ] Production Cloud Deployment (AWS RDS PostgreSQL pgvector, AWS SQS, AWS App Runner / ECS Fargate).

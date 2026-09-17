@@ -174,6 +174,119 @@ class AnthropicLLM:
         )
 
 
+@dataclass
+class GeminiLLM:
+    """
+    Google Gemini API provider (gemini-1.5-flash / gemini-2.0-flash).
+    Free Tier: 15 Requests Per Minute, 1,000,000 Tokens Per Minute.
+    """
+
+    model: str = "gemini-1.5-flash"
+    pricing: Pricing = field(default_factory=lambda: Pricing(0.075, 0.30))
+    max_tokens: int = 2048
+
+    def complete(self, prompt: str, system: Optional[str] = None) -> LLMResponse:
+        import httpx  # noqa: PLC0415
+
+        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+        if not api_key:
+            raise RuntimeError("GEMINI_API_KEY or GOOGLE_API_KEY not set in environment")
+
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={api_key}"
+
+        contents = []
+        if system:
+            contents.append({"role": "user", "parts": [{"text": f"System Instruction: {system}"}]})
+            contents.append({"role": "model", "parts": [{"text": "Understood."}]})
+
+        contents.append({"role": "user", "parts": [{"text": prompt}]})
+
+        payload = {
+            "contents": contents,
+            "generationConfig": {"maxOutputTokens": self.max_tokens},
+        }
+
+        started = time.perf_counter()
+        resp = httpx.post(url, json=payload, timeout=30.0)
+        resp.raise_for_status()
+        latency_ms = int((time.perf_counter() - started) * 1000)
+
+        data = resp.json()
+        candidates = data.get("candidates", [])
+        text = ""
+        if candidates:
+            parts = candidates[0].get("content", {}).get("parts", [])
+            text = "".join(p.get("text", "") for p in parts)
+
+        usage = data.get("usageMetadata", {})
+        tokens_in = usage.get("promptTokenCount", max(1, len(prompt) // 4))
+        tokens_out = usage.get("candidatesTokenCount", max(1, len(text) // 4))
+
+        return LLMResponse(
+            text=text,
+            tokens_input=tokens_in,
+            tokens_output=tokens_out,
+            latency_ms=latency_ms,
+            model=self.model,
+            cost_usd=self.pricing.cost(tokens_in, tokens_out),
+        )
+
+
+@dataclass
+class GroqLLM:
+    """
+    Groq API provider (llama-3.3-70b-versatile).
+    Free Tier: 30 Requests Per Minute.
+    """
+
+    model: str = "llama-3.3-70b-versatile"
+    pricing: Pricing = field(default_factory=lambda: Pricing(0.59, 0.79))
+    max_tokens: int = 2048
+
+    def complete(self, prompt: str, system: Optional[str] = None) -> LLMResponse:
+        import httpx  # noqa: PLC0415
+
+        api_key = os.environ.get("GROQ_API_KEY")
+        if not api_key:
+            raise RuntimeError("GROQ_API_KEY not set in environment")
+
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "max_tokens": self.max_tokens,
+        }
+
+        started = time.perf_counter()
+        resp = httpx.post(url, headers=headers, json=payload, timeout=30.0)
+        resp.raise_for_status()
+        latency_ms = int((time.perf_counter() - started) * 1000)
+
+        data = resp.json()
+        choices = data.get("choices", [])
+        text = choices[0]["message"]["content"] if choices else ""
+
+        usage = data.get("usage", {})
+        tokens_in = usage.get("prompt_tokens", max(1, len(prompt) // 4))
+        tokens_out = usage.get("completion_tokens", max(1, len(text) // 4))
+
+        return LLMResponse(
+            text=text,
+            tokens_input=tokens_in,
+            tokens_output=tokens_out,
+            latency_ms=latency_ms,
+            model=self.model,
+            cost_usd=self.pricing.cost(tokens_in, tokens_out),
+        )
+
+
 def get_llm(kind: str | None = None) -> LLM:
     """Factory. Defaults to mock so nothing accidentally costs money."""
     kind = (kind or os.environ.get("LLM_PROVIDER", "mock")).lower()
@@ -181,4 +294,8 @@ def get_llm(kind: str | None = None) -> LLM:
         return MockLLM()
     if kind == "anthropic":
         return AnthropicLLM()
+    if kind in ("gemini", "google"):
+        return GeminiLLM()
+    if kind == "groq":
+        return GroqLLM()
     raise ValueError(f"unknown LLM provider: {kind!r}")

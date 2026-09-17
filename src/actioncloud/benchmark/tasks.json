@@ -1,0 +1,1442 @@
+[
+  {
+    "id": 1,
+    "role": "coding",
+    "task": "Implement FastAPI JWT authentication dependency with Bearer token validation",
+    "task_key": "task-fastapi-jwt-auth",
+    "technologies": [
+      "fastapi",
+      "python",
+      "jwt"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 2,
+    "role": "coding",
+    "task": "Configure FastAPI JWT Bearer token authentication and payload parsing",
+    "task_key": "task-fastapi-jwt-auth",
+    "technologies": [
+      "fastapi",
+      "python",
+      "jwt"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 3,
+    "role": "coding",
+    "task": "Add JWT token validation middleware to FastAPI REST API router",
+    "task_key": "task-fastapi-jwt-auth",
+    "technologies": [
+      "fastapi",
+      "python",
+      "jwt"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 4,
+    "role": "coding",
+    "task": "Implement exponential backoff retry decorator for boto3 SQS receive_message",
+    "task_key": "task-sqs-retry-decorator",
+    "technologies": [
+      "python",
+      "boto3",
+      "sqs"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 5,
+    "role": "coding",
+    "task": "Add exponential backoff error recovery wrapper around SQS receive calls",
+    "task_key": "task-sqs-retry-decorator",
+    "technologies": [
+      "python",
+      "boto3",
+      "sqs"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 6,
+    "role": "coding",
+    "task": "Create python decorator for retrying SQS receive message operation on transient failure",
+    "task_key": "task-sqs-retry-decorator",
+    "technologies": [
+      "python",
+      "boto3",
+      "sqs"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 7,
+    "role": "coding",
+    "task": "Write pgvector HNSW cosine similarity search query for experience embeddings",
+    "task_key": "task-postgres-vector-search",
+    "technologies": [
+      "postgres",
+      "pgvector",
+      "python"
+    ],
+    "expected_tools": [
+      "editor",
+      "psql"
+    ]
+  },
+  {
+    "id": 8,
+    "role": "coding",
+    "task": "Implement vector similarity search in Python using psycopg3 and pgvector",
+    "task_key": "task-postgres-vector-search",
+    "technologies": [
+      "postgres",
+      "pgvector",
+      "python"
+    ],
+    "expected_tools": [
+      "editor",
+      "psql"
+    ]
+  },
+  {
+    "id": 9,
+    "role": "coding",
+    "task": "Formulate pgvector SQL query for top-k nearest neighbor experience retrieval",
+    "task_key": "task-postgres-vector-search",
+    "technologies": [
+      "postgres",
+      "pgvector",
+      "python"
+    ],
+    "expected_tools": [
+      "editor",
+      "psql"
+    ]
+  },
+  {
+    "id": 10,
+    "role": "coding",
+    "task": "Define Pydantic v2 schema for ExperienceCreate with field validators and tag normalization",
+    "task_key": "task-pydantic-validation-schema",
+    "technologies": [
+      "pydantic",
+      "python",
+      "fastapi"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 11,
+    "role": "coding",
+    "task": "Create Pydantic model enforcing lowercased non-empty tags and non-negative tokens",
+    "task_key": "task-pydantic-validation-schema",
+    "technologies": [
+      "pydantic",
+      "python",
+      "fastapi"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 12,
+    "role": "coding",
+    "task": "Implement ExperienceCreate request validation model using Pydantic v2 syntax",
+    "task_key": "task-pydantic-validation-schema",
+    "technologies": [
+      "pydantic",
+      "python",
+      "fastapi"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 13,
+    "role": "coding",
+    "task": "Configure CORSMiddleware in FastAPI app supporting specified origin domains",
+    "task_key": "task-fastapi-cors-middleware",
+    "technologies": [
+      "fastapi",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 14,
+    "role": "coding",
+    "task": "Add CORS middleware settings for ActionCloud API allowing authorization headers",
+    "task_key": "task-fastapi-cors-middleware",
+    "technologies": [
+      "fastapi",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 15,
+    "role": "coding",
+    "task": "Implement FastAPI CORS configuration for local development and IDE MCP extensions",
+    "task_key": "task-fastapi-cors-middleware",
+    "technologies": [
+      "fastapi",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 16,
+    "role": "coding",
+    "task": "Implement async connection pool wrapper with AsyncConnectionPool in psycopg3",
+    "task_key": "task-async-event-loop-pool",
+    "technologies": [
+      "python",
+      "asyncio",
+      "psycopg"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 17,
+    "role": "coding",
+    "task": "Create asynchronous database pool manager using Python asyncio and psycopg3",
+    "task_key": "task-async-event-loop-pool",
+    "technologies": [
+      "python",
+      "asyncio",
+      "psycopg"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 18,
+    "role": "coding",
+    "task": "Configure async connection lifecycle context manager for FastAPI routes",
+    "task_key": "task-async-event-loop-pool",
+    "technologies": [
+      "python",
+      "asyncio",
+      "psycopg"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 19,
+    "role": "coding",
+    "task": "Implement Model Context Protocol (MCP) server tool definitions for search_experiences",
+    "task_key": "task-mcp-tool-definition",
+    "technologies": [
+      "mcp",
+      "json-rpc",
+      "python"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 20,
+    "role": "coding",
+    "task": "Write MCP JSON-RPC handler for query_experiences and record_experience tools",
+    "task_key": "task-mcp-tool-definition",
+    "technologies": [
+      "mcp",
+      "json-rpc",
+      "python"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 21,
+    "role": "coding",
+    "task": "Define MCP server endpoint exposed over stdio transport for IDE extensions",
+    "task_key": "task-mcp-tool-definition",
+    "technologies": [
+      "mcp",
+      "json-rpc",
+      "python"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 22,
+    "role": "coding",
+    "task": "Implement sliding window rate limiting middleware for FastAPI endpoint using Redis",
+    "task_key": "task-rate-limiting-middleware",
+    "technologies": [
+      "fastapi",
+      "redis",
+      "python"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 23,
+    "role": "coding",
+    "task": "Add request throttling middleware to prevent API abuse on public endpoints",
+    "task_key": "task-rate-limiting-middleware",
+    "technologies": [
+      "fastapi",
+      "redis",
+      "python"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 24,
+    "role": "coding",
+    "task": "Write Redis-backed rate limiter enforcing request rate limits per client IP",
+    "task_key": "task-rate-limiting-middleware",
+    "technologies": [
+      "fastapi",
+      "redis",
+      "python"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 25,
+    "role": "coding",
+    "task": "Add Prometheus gauge and counter metrics for experience ingestion and retrieval latency",
+    "task_key": "task-prometheus-metrics-exporter",
+    "technologies": [
+      "python",
+      "prometheus",
+      "fastapi"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 26,
+    "role": "coding",
+    "task": "Implement /metrics endpoint in FastAPI exporting execution counts and token savings",
+    "task_key": "task-prometheus-metrics-exporter",
+    "technologies": [
+      "python",
+      "prometheus",
+      "fastapi"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 27,
+    "role": "coding",
+    "task": "Expose system metrics using prometheus_client library for Grafana visualization",
+    "task_key": "task-prometheus-metrics-exporter",
+    "technologies": [
+      "python",
+      "prometheus",
+      "fastapi"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 28,
+    "role": "coding",
+    "task": "Configure structlog JSON formatter for structured logging across API and worker",
+    "task_key": "task-structlog-json-logging",
+    "technologies": [
+      "python",
+      "structlog"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 29,
+    "role": "coding",
+    "task": "Implement context-aware JSON logging with request ID tracing in Python",
+    "task_key": "task-structlog-json-logging",
+    "technologies": [
+      "python",
+      "structlog"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 30,
+    "role": "coding",
+    "task": "Configure logging pipeline to produce structured JSON logs for audit trail",
+    "task_key": "task-structlog-json-logging",
+    "technologies": [
+      "python",
+      "structlog"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 31,
+    "role": "architecture",
+    "task": "Design 4-tier governance hierarchy for memory promotion (untrusted, private, agent, shared)",
+    "task_key": "task-governance-tier-hierarchy",
+    "technologies": [
+      "architecture",
+      "governance"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 32,
+    "role": "architecture",
+    "task": "Architect MemoryJudge promotion rules based on success rate and reuse thresholds",
+    "task_key": "task-governance-tier-hierarchy",
+    "technologies": [
+      "architecture",
+      "governance"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 33,
+    "role": "architecture",
+    "task": "Define system boundaries and data flow between agent-private and shared memory stores",
+    "task_key": "task-governance-tier-hierarchy",
+    "technologies": [
+      "architecture",
+      "governance"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 34,
+    "role": "architecture",
+    "task": "Architect asynchronous experience processing pipeline using AWS SQS and background workers",
+    "task_key": "task-sqs-decoupled-worker",
+    "technologies": [
+      "architecture",
+      "sqs",
+      "worker"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 35,
+    "role": "architecture",
+    "task": "Design queue-decoupled architecture separating API REST layer from embedding worker",
+    "task_key": "task-sqs-decoupled-worker",
+    "technologies": [
+      "architecture",
+      "sqs",
+      "worker"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 36,
+    "role": "architecture",
+    "task": "Draft architecture for high-throughput memory ingestion using SQS buffer and background workers",
+    "task_key": "task-sqs-decoupled-worker",
+    "technologies": [
+      "architecture",
+      "sqs",
+      "worker"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 37,
+    "role": "architecture",
+    "task": "Design HNSW vector indexing parameters (m=16, ef_construction=64) for scaling pgvector",
+    "task_key": "task-vector-indexing-strategy",
+    "technologies": [
+      "architecture",
+      "pgvector",
+      "postgres"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 38,
+    "role": "architecture",
+    "task": "Evaluate IVFFlat vs HNSW indexing strategies for million-vector experience search",
+    "task_key": "task-vector-indexing-strategy",
+    "technologies": [
+      "architecture",
+      "pgvector",
+      "postgres"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 39,
+    "role": "architecture",
+    "task": "Formulate indexing and partitioning strategy for multi-tenant experience embeddings",
+    "task_key": "task-vector-indexing-strategy",
+    "technologies": [
+      "architecture",
+      "pgvector",
+      "postgres"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 40,
+    "role": "architecture",
+    "task": "Architect MCP server integration layer connecting Antigravity IDE with ActionCloud backend",
+    "task_key": "task-mcp-integration-arch",
+    "technologies": [
+      "architecture",
+      "mcp",
+      "ide"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 41,
+    "role": "architecture",
+    "task": "Design protocol bridge between IDE Model Context Protocol and ActionCloud REST API",
+    "task_key": "task-mcp-integration-arch",
+    "technologies": [
+      "architecture",
+      "mcp",
+      "ide"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 42,
+    "role": "architecture",
+    "task": "Draft component diagram for IDE context sync via MCP stdio connection",
+    "task_key": "task-mcp-integration-arch",
+    "technologies": [
+      "architecture",
+      "mcp",
+      "ide"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 43,
+    "role": "architecture",
+    "task": "Design abstract BaseLLM interface and factory pattern supporting Anthropic, Gemini, Groq, and Mock providers",
+    "task_key": "task-multi-llm-provider-factory",
+    "technologies": [
+      "architecture",
+      "llm",
+      "design-patterns"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 44,
+    "role": "architecture",
+    "task": "Architect provider-agnostic LLM abstraction layer for multi-agent benchmark harness",
+    "task_key": "task-multi-llm-provider-factory",
+    "technologies": [
+      "architecture",
+      "llm",
+      "design-patterns"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 45,
+    "role": "architecture",
+    "task": "Define clean LLM interface decoupling agent task execution from provider SDKs",
+    "task_key": "task-multi-llm-provider-factory",
+    "technologies": [
+      "architecture",
+      "llm",
+      "design-patterns"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 46,
+    "role": "debugging",
+    "task": "Debug psycopg_pool.PoolTimeout error occurring during concurrent test suite execution",
+    "task_key": "task-psycopg-pool-timeout-debug",
+    "technologies": [
+      "psycopg",
+      "postgres",
+      "debugging"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 47,
+    "role": "debugging",
+    "task": "Diagnose connection leak in database context manager leading to pool exhaustion",
+    "task_key": "task-psycopg-pool-timeout-debug",
+    "technologies": [
+      "psycopg",
+      "postgres",
+      "debugging"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 48,
+    "role": "debugging",
+    "task": "Fix connection pool timeout caused by missing conn.close() in async handler",
+    "task_key": "task-psycopg-pool-timeout-debug",
+    "technologies": [
+      "psycopg",
+      "postgres",
+      "debugging"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 49,
+    "role": "debugging",
+    "task": "Debug PostgreSQL container startup failure caused by host port 5432 collision with local postgres",
+    "task_key": "task-pgvector-port-collision-debug",
+    "technologies": [
+      "docker",
+      "postgres",
+      "debugging"
+    ],
+    "expected_tools": [
+      "bash",
+      "docker"
+    ]
+  },
+  {
+    "id": 50,
+    "role": "debugging",
+    "task": "Troubleshoot role actioncloud does not exist error on port 5432 after local postgres collision",
+    "task_key": "task-pgvector-port-collision-debug",
+    "technologies": [
+      "docker",
+      "postgres",
+      "debugging"
+    ],
+    "expected_tools": [
+      "bash",
+      "docker"
+    ]
+  },
+  {
+    "id": 51,
+    "role": "debugging",
+    "task": "Resolve database connection failure by switching host binding from port 5432 to 5433",
+    "task_key": "task-pgvector-port-collision-debug",
+    "technologies": [
+      "docker",
+      "postgres",
+      "debugging"
+    ],
+    "expected_tools": [
+      "bash",
+      "docker"
+    ]
+  },
+  {
+    "id": 52,
+    "role": "debugging",
+    "task": "Debug duplicate message processing in worker caused by short SQS visibility timeout",
+    "task_key": "task-sqs-visibility-timeout-debug",
+    "technologies": [
+      "aws",
+      "sqs",
+      "debugging"
+    ],
+    "expected_tools": [
+      "editor",
+      "bash"
+    ]
+  },
+  {
+    "id": 53,
+    "role": "debugging",
+    "task": "Diagnose worker message re-delivery during long-running embedding extraction",
+    "task_key": "task-sqs-visibility-timeout-debug",
+    "technologies": [
+      "aws",
+      "sqs",
+      "debugging"
+    ],
+    "expected_tools": [
+      "editor",
+      "bash"
+    ]
+  },
+  {
+    "id": 54,
+    "role": "debugging",
+    "task": "Fix SQS visibility timeout setting to cover long experience processing steps",
+    "task_key": "task-sqs-visibility-timeout-debug",
+    "technologies": [
+      "aws",
+      "sqs",
+      "debugging"
+    ],
+    "expected_tools": [
+      "editor",
+      "bash"
+    ]
+  },
+  {
+    "id": 55,
+    "role": "debugging",
+    "task": "Debug HTTP 405 Method Not Allowed error on OPTIONS preflight requests in FastAPI",
+    "task_key": "task-fastapi-cors-preflight-debug",
+    "technologies": [
+      "fastapi",
+      "cors",
+      "debugging"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 56,
+    "role": "debugging",
+    "task": "Resolve missing CORS headers error when calling API from web extension frontend",
+    "task_key": "task-fastapi-cors-preflight-debug",
+    "technologies": [
+      "fastapi",
+      "cors",
+      "debugging"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 57,
+    "role": "debugging",
+    "task": "Fix preflight OPTIONS request routing in FastAPI CORSMiddleware",
+    "task_key": "task-fastapi-cors-preflight-debug",
+    "technologies": [
+      "fastapi",
+      "cors",
+      "debugging"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 58,
+    "role": "debugging",
+    "task": "Debug Pydantic ValidationError when parsing incoming experience payload with missing fields",
+    "task_key": "task-pydantic-validation-error-debug",
+    "technologies": [
+      "pydantic",
+      "python",
+      "debugging"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 59,
+    "role": "debugging",
+    "task": "Fix type mismatch error in ExperienceCreate when tags array contains empty strings",
+    "task_key": "task-pydantic-validation-error-debug",
+    "technologies": [
+      "pydantic",
+      "python",
+      "debugging"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 60,
+    "role": "debugging",
+    "task": "Resolve validation error on negative token counts in experience request schema",
+    "task_key": "task-pydantic-validation-error-debug",
+    "technologies": [
+      "pydantic",
+      "python",
+      "debugging"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 61,
+    "role": "review",
+    "task": "Review MemoryJudge promotion and demotion threshold logic for edge-case race conditions",
+    "task_key": "task-review-memory-judge-promotion",
+    "technologies": [
+      "review",
+      "governance",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 62,
+    "role": "review",
+    "task": "Audit MemoryJudge tier transition code for correct success rate calculation",
+    "task_key": "task-review-memory-judge-promotion",
+    "technologies": [
+      "review",
+      "governance",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 63,
+    "role": "review",
+    "task": "Perform code review on promotion logic ensuring untrusted experiences cannot leak into shared tier",
+    "task_key": "task-review-memory-judge-promotion",
+    "technologies": [
+      "review",
+      "governance",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 64,
+    "role": "review",
+    "task": "Review experience fallback extractor logic when LLM JSON parsing fails",
+    "task_key": "task-review-vector-embedding-extractor",
+    "technologies": [
+      "review",
+      "embeddings",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 65,
+    "role": "review",
+    "task": "Audit embedding generation code for deterministic vector length and normalization",
+    "task_key": "task-review-vector-embedding-extractor",
+    "technologies": [
+      "review",
+      "embeddings",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 66,
+    "role": "review",
+    "task": "Code review experience metadata extraction for proper sanitation of sensitive tokens",
+    "task_key": "task-review-vector-embedding-extractor",
+    "technologies": [
+      "review",
+      "embeddings",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 67,
+    "role": "review",
+    "task": "Review MCP server JSON-RPC error handling to prevent sensitive stack trace disclosure",
+    "task_key": "task-review-mcp-server-security",
+    "technologies": [
+      "review",
+      "mcp",
+      "security"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 68,
+    "role": "review",
+    "task": "Audit MCP tool parameter definitions for input validation compliance",
+    "task_key": "task-review-mcp-server-security",
+    "technologies": [
+      "review",
+      "mcp",
+      "security"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 69,
+    "role": "review",
+    "task": "Perform code review on stdio transport handling in ActionCloud MCP server",
+    "task_key": "task-review-mcp-server-security",
+    "technologies": [
+      "review",
+      "mcp",
+      "security"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 70,
+    "role": "review",
+    "task": "Review global FastAPI exception handlers for uniform error response payload format",
+    "task_key": "task-review-api-exception-handlers",
+    "technologies": [
+      "review",
+      "fastapi",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 71,
+    "role": "review",
+    "task": "Audit HTTP status codes across experience endpoints for REST standards compliance",
+    "task_key": "task-review-api-exception-handlers",
+    "technologies": [
+      "review",
+      "fastapi",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 72,
+    "role": "review",
+    "task": "Code review database transaction rollback logic in API exception handling wrapper",
+    "task_key": "task-review-api-exception-handlers",
+    "technologies": [
+      "review",
+      "fastapi",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 73,
+    "role": "review",
+    "task": "Review MetricCalculator formulas for Redundancy Index and Knowledge Reuse Rate accuracy",
+    "task_key": "task-review-benchmark-metrics-calc",
+    "technologies": [
+      "review",
+      "metrics",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 74,
+    "role": "review",
+    "task": "Audit empirical evaluation script metrics calculation against raw database records",
+    "task_key": "task-review-benchmark-metrics-calc",
+    "technologies": [
+      "review",
+      "metrics",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 75,
+    "role": "review",
+    "task": "Code review benchmark summary generator for correct floating-point rounding",
+    "task_key": "task-review-benchmark-metrics-calc",
+    "technologies": [
+      "review",
+      "metrics",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 76,
+    "role": "security",
+    "task": "Audit pgvector SQL query parameterization to prevent SQL injection vulnerabilities",
+    "task_key": "task-sec-sql-injection-audit",
+    "technologies": [
+      "security",
+      "postgres",
+      "sql"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 77,
+    "role": "security",
+    "task": "Enforce parameterized queries across all database operations in actioncloud/db.py",
+    "task_key": "task-sec-sql-injection-audit",
+    "technologies": [
+      "security",
+      "postgres",
+      "sql"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 78,
+    "role": "security",
+    "task": "Verify SQL injection resistance in dynamic vector search query builder",
+    "task_key": "task-sec-sql-injection-audit",
+    "technologies": [
+      "security",
+      "postgres",
+      "sql"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 79,
+    "role": "security",
+    "task": "Implement API key authentication header verification for protected memory management endpoints",
+    "task_key": "task-sec-api-key-auth",
+    "technologies": [
+      "security",
+      "fastapi",
+      "authentication"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 80,
+    "role": "security",
+    "task": "Add security scheme for X-API-Key header validation in FastAPI OpenAPI schema",
+    "task_key": "task-sec-api-key-auth",
+    "technologies": [
+      "security",
+      "fastapi",
+      "authentication"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 81,
+    "role": "security",
+    "task": "Write security test ensuring unauthorized HTTP requests return 401 Unauthorized",
+    "task_key": "task-sec-api-key-auth",
+    "technologies": [
+      "security",
+      "fastapi",
+      "authentication"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 82,
+    "role": "security",
+    "task": "Implement regex scrubber removing API keys, JWT tokens, and passwords from experience task text",
+    "task_key": "task-sec-sensitive-data-scrubbing",
+    "technologies": [
+      "security",
+      "privacy",
+      "python"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 83,
+    "role": "security",
+    "task": "Add sensitive data redaction filter before storing experience solution in PostgreSQL",
+    "task_key": "task-sec-sensitive-data-scrubbing",
+    "technologies": [
+      "security",
+      "privacy",
+      "python"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 84,
+    "role": "security",
+    "task": "Write unit test verifying secret keys are stripped prior to experience embedding generation",
+    "task_key": "task-sec-sensitive-data-scrubbing",
+    "technologies": [
+      "security",
+      "privacy",
+      "python"
+    ],
+    "expected_tools": [
+      "editor",
+      "pytest"
+    ]
+  },
+  {
+    "id": 85,
+    "role": "security",
+    "task": "Audit MCP server tool handlers to eliminate command injection vectors in query strings",
+    "task_key": "task-sec-mcp-command-injection",
+    "technologies": [
+      "security",
+      "mcp",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 86,
+    "role": "security",
+    "task": "Sanitize all user-supplied search queries before passing to database vector engine",
+    "task_key": "task-sec-mcp-command-injection",
+    "technologies": [
+      "security",
+      "mcp",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 87,
+    "role": "security",
+    "task": "Implement strict query input length and character validation in MCP tool interface",
+    "task_key": "task-sec-mcp-command-injection",
+    "technologies": [
+      "security",
+      "mcp",
+      "python"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 88,
+    "role": "security",
+    "task": "Audit python dependency tree using pip-audit for known CVE security vulnerabilities",
+    "task_key": "task-sec-dependency-vulnerability-scan",
+    "technologies": [
+      "security",
+      "dependencies"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 89,
+    "role": "security",
+    "task": "Remediate outdated package versions in pyproject.toml to ensure security compliance",
+    "task_key": "task-sec-dependency-vulnerability-scan",
+    "technologies": [
+      "security",
+      "dependencies"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 90,
+    "role": "security",
+    "task": "Configure automated dependency vulnerability scanning step in CI pipeline",
+    "task_key": "task-sec-dependency-vulnerability-scan",
+    "technologies": [
+      "security",
+      "dependencies"
+    ],
+    "expected_tools": [
+      "editor"
+    ]
+  },
+  {
+    "id": 91,
+    "role": "deployment",
+    "task": "Fix PostgreSQL 16 container failing with pgvector extension missing error",
+    "task_key": "task-docker-pgvector-setup",
+    "technologies": [
+      "docker",
+      "postgres",
+      "pgvector"
+    ],
+    "expected_tools": [
+      "docker",
+      "bash"
+    ]
+  },
+  {
+    "id": 92,
+    "role": "deployment",
+    "task": "Configure docker-compose.yml to use pgvector/pgvector:pg16 image",
+    "task_key": "task-docker-pgvector-setup",
+    "technologies": [
+      "docker",
+      "postgres",
+      "pgvector"
+    ],
+    "expected_tools": [
+      "docker",
+      "bash"
+    ]
+  },
+  {
+    "id": 93,
+    "role": "deployment",
+    "task": "Resolve pgvector extension initialization error in Docker Compose environment",
+    "task_key": "task-docker-pgvector-setup",
+    "technologies": [
+      "docker",
+      "postgres",
+      "pgvector"
+    ],
+    "expected_tools": [
+      "docker",
+      "bash"
+    ]
+  },
+  {
+    "id": 94,
+    "role": "deployment",
+    "task": "Configure LocalStack SQS health check curl command in docker-compose.yml",
+    "task_key": "task-localstack-healthcheck",
+    "technologies": [
+      "docker",
+      "localstack",
+      "sqs"
+    ],
+    "expected_tools": [
+      "docker",
+      "bash"
+    ]
+  },
+  {
+    "id": 95,
+    "role": "deployment",
+    "task": "Add LocalStack health check probe for port 4566 in Docker Compose setup",
+    "task_key": "task-localstack-healthcheck",
+    "technologies": [
+      "docker",
+      "localstack",
+      "sqs"
+    ],
+    "expected_tools": [
+      "docker",
+      "bash"
+    ]
+  },
+  {
+    "id": 96,
+    "role": "deployment",
+    "task": "Verify SQS queue readiness probe in LocalStack compose environment",
+    "task_key": "task-localstack-healthcheck",
+    "technologies": [
+      "docker",
+      "localstack",
+      "sqs"
+    ],
+    "expected_tools": [
+      "docker",
+      "bash"
+    ]
+  },
+  {
+    "id": 97,
+    "role": "deployment",
+    "task": "Create multi-stage Dockerfile for FastAPI application minimizing final image footprint",
+    "task_key": "task-dockerfile-multi-stage-build",
+    "technologies": [
+      "docker",
+      "python",
+      "deployment"
+    ],
+    "expected_tools": [
+      "docker",
+      "bash"
+    ]
+  },
+  {
+    "id": 98,
+    "role": "deployment",
+    "task": "Optimize Docker image build layer caching for python dependencies and application code",
+    "task_key": "task-dockerfile-multi-stage-build",
+    "technologies": [
+      "docker",
+      "python",
+      "deployment"
+    ],
+    "expected_tools": [
+      "docker",
+      "bash"
+    ]
+  },
+  {
+    "id": 99,
+    "role": "deployment",
+    "task": "Configure non-root container execution user in Dockerfile for production deployment",
+    "task_key": "task-dockerfile-multi-stage-build",
+    "technologies": [
+      "docker",
+      "python",
+      "deployment"
+    ],
+    "expected_tools": [
+      "docker",
+      "bash"
+    ]
+  },
+  {
+    "id": 100,
+    "role": "deployment",
+    "task": "Add Docker healthcheck directive verifying FastAPI /health endpoint readiness",
+    "task_key": "task-dockerfile-multi-stage-build",
+    "technologies": [
+      "docker",
+      "python",
+      "deployment"
+    ],
+    "expected_tools": [
+      "docker",
+      "bash"
+    ]
+  }
+]
