@@ -1,15 +1,12 @@
-# ActionCloud — Governed Distributed Experience Memory for Multi-Agent Systems
+# ActionCloud
 
-ActionCloud is a cloud-native distributed experience memory service designed for multi-agent LLM systems. It enables teams of autonomous agents to share procedural knowledge and avoid repeating trial-and-error mistakes, while enforcing strict governance to prevent false or unproven memories from corrupting the fleet.
+Cloud-native distributed experience memory service for multi-agent LLM systems.
 
-> **Status: Phase 1 & Phase 2 Complete & Fully Verified.**
-> - **Unit Tests**: 25/25 passing (`make test`).
-> - **Phase 1 Pipeline E2E**: 19/19 checks passing (`python scripts/verify_e2e.py`).
-> - **Phase 2 Governance & Retrieval E2E**: 16/16 checks passing (`python scripts/verify_phase2_e2e.py`).
+ActionCloud enables autonomous agent fleets to share procedural knowledge and eliminate redundant execution while enforcing strict governance to prevent false or unproven memories from corrupting shared fleet state.
 
 ---
 
-## 🏗 Architecture & Key Principles
+## Architecture Overview
 
 ```
                               ┌──────────────────────────────────┐
@@ -50,108 +47,103 @@ ActionCloud is a cloud-native distributed experience memory service designed for
                              └──────────────────┘
 ```
 
-1. **Asynchronous Writes (HTTP 202)**: Memory creation is decoupled from task execution via SQS queues and background workers. Agents write memories instantly without incurring task latency penalties.
-2. **Synchronous Hybrid Retrieval**: Agents perform fast, governed reads combining `pgvector` 1536-dimensional dense vector similarity with PostgreSQL full-text keyword ranking (`ts_rank`).
-3. **Strict Memory Governance**: Memories are untrusted by default and must earn fleet-wide trust through observed successful reuse.
-4. **Unified A/B Benchmark Harness**: System A (Stateless Baseline) and System B (ActionCloud Memory) share identical agent code paths (`Agent(use_memory=False)` vs `Agent(use_memory=True)`), ensuring clean experimental evaluation.
+### Core Design Principles
+
+1. **Non-Blocking Asynchronous Writes (`HTTP 202`)**: Memory submission is decoupled from agent execution via SQS message queues and background workers. Agents write memories without incurring task latency overhead.
+2. **Synchronous Hybrid Search**: Agents execute fast, governed reads combining `pgvector` 1536-dimensional dense vector similarity with PostgreSQL full-text keyword ranking (`ts_rank`).
+3. **Governed Trust Management**: Memories enter untrusted and climb a 5-tier governance ladder based on observed reuse success.
+4. **Equalized A/B Benchmark Harness**: System A (Stateless Baseline) and System B (ActionCloud Memory) share identical agent execution paths (`Agent(use_memory=False)` vs `Agent(use_memory=True)`), ensuring rigorous experimental comparisons.
 
 ---
 
-## 🛡 Memory Governance & 5-Tier Ladder
+## Memory Governance Engine
 
-ActionCloud implements a **5-tier governance ladder** managed by the `MemoryJudge` engine:
+ActionCloud enforces a 5-tier governance model managed by the `MemoryJudge` engine:
 
 $$\text{PRIVATE} \longrightarrow \text{AGENT} \longrightarrow \text{SHARED} \longrightarrow \text{VALIDATED} \longrightarrow \text{ORGANIZATIONAL}$$
 
-* **`PRIVATE`**: Visible only to the run that created it. Failed tasks remain private permanently.
-* **`AGENT`**: Visible to the same agent across repeated runs. Initial successful tasks land here.
-* **`SHARED`**: Visible fleet-wide once an experience earns promotion through a verified successful reuse.
-* **`VALIDATED`**: Proven by $\ge 3$ recorded reuses with $\ge 80\%$ success rate.
-* **`ORGANIZATIONAL`**: Canonical knowledge ($\ge 10$ reuses with $\ge 90\%$ success rate).
-* **Automatic Demotion**: If a memory leads to repeated failures during reuse (success rate $< 40\%$), the Memory Judge automatically demotes it back to `PRIVATE`.
-* **Audit Trail**: All tier changes are appended to the `tier_transitions` audit table.
+* **PRIVATE**: Visible only to the run that created it. Failed task executions remain private.
+* **AGENT**: Visible to the creating agent across runs. Initial successful tasks land here.
+* **SHARED**: Visible fleet-wide once promoted through a verified successful reuse.
+* **VALIDATED**: Proven by $\ge 3$ recorded reuses with $\ge 80\%$ success rate.
+* **ORGANIZATIONAL**: Canonical fleet knowledge ($\ge 10$ reuses with $\ge 90\%$ success rate).
+* **Automatic Demotion**: Memories with low reuse success ($< 40\%$ across $\ge 3$ reuses) are automatically demoted to `PRIVATE`.
+* **Audit Lineage**: Every tier transition is logged immutably in the `tier_transitions` audit table.
 
 ---
 
-## 🧠 Intelligence & Hybrid Retrieval
+## Intelligence & Hybrid Retrieval
 
-* **LLM Extraction Worker (`extractor.py`)**: Parses raw episode logs out-of-band into:
-  * **Generalized Procedural Workflows**: JSON objects with `prerequisites`, ordered `steps`, and `pitfalls`.
-  * **Knowledge Triples**: Subject-Predicate-Object semantic relationships.
+* **LLM Extraction Worker (`extractor.py`)**: Asynchronously parses execution logs into procedural workflows (JSON step sequences) and subject-predicate-object knowledge triples.
 * **Dense Vector Embeddings (`embeddings.py`)**: Generates 1536-dimensional unit-normalized vector embeddings for PostgreSQL `pgvector` storage.
-* **Hybrid Search (`db.py`)**: Merges keyword ranking with vector similarity:
+* **Hybrid Search Engine (`db.py`)**: Fuses full-text keyword search and vector similarity:
   $$\text{Relevance} = 0.5 \times \text{FTS\_Rank} + 0.5 \times \text{Vector\_Similarity}$$
-* **Reuse Feedback API**: `POST /experiences/{id}/reuse` records agent reuse outcomes and triggers real-time tier promotion/demotion.
+* **Reuse Feedback Endpoint (`api.py`)**: `POST /experiences/{id}/reuse` records agent reuse outcomes and triggers real-time tier promotion or demotion.
 
 ---
 
-## 👥 Agent Fleet Roles
+## Agent Fleet Roles
 
-Implements all 6 proposal agent roles in `ROLE_REGISTRY` ([roles.py](file:///Users/nagashiva/Desktop/ASAI/S5/PROJECTS/CLOUD/actioncloud/src/actioncloud/agents/roles.py)):
-1. `CodingAgent` (`AgentRole.CODING`)
-2. `ResearchAgent` (`AgentRole.RESEARCH`)
-3. `TestingAgent` (`AgentRole.TESTING`)
-4. `DeploymentAgent` (`AgentRole.DEPLOYMENT`)
-5. `DocumentationAgent` (`AgentRole.DOCUMENTATION`)
-6. `DataAnalysisAgent` (`AgentRole.DATA_ANALYSIS`)
-
----
-
-## 📊 Metric Evaluation Engine (`metrics.py`)
-
-Provides a built-in metric calculator accessible via **`GET /metrics`**:
-* **Knowledge Reuse Rate (KRR %)**
-* **Redundancy Index (RI)**
-* **Cumulative Token Savings %**
-* **Financial Cost Savings % ($ USD)**
-* **Task Execution Latency (mean ms)**
-* **Governance Tier Distribution**
+Implements all 6 proposal agent roles in `ROLE_REGISTRY` (`roles.py`):
+- `CodingAgent` (`AgentRole.CODING`)
+- `ResearchAgent` (`AgentRole.RESEARCH`)
+- `TestingAgent` (`AgentRole.TESTING`)
+- `DeploymentAgent` (`AgentRole.DEPLOYMENT`)
+- `DocumentationAgent` (`AgentRole.DOCUMENTATION`)
+- `DataAnalysisAgent` (`AgentRole.DATA_ANALYSIS`)
 
 ---
 
-## ⚡ Quickstart & Runbook
+## System Metrics & Analytics Engine
 
-### 1. Prerequisites
-- Docker Desktop (running)
+Accessible via `GET /metrics`:
+- **Knowledge Reuse Rate (KRR %)**
+- **Redundancy Index (RI)**
+- **Cumulative Token Savings (%)**
+- **Financial Cost Savings (% USD)**
+- **Task Execution Latency (mean ms)**
+- **Governance Tier Distribution**
+
+---
+
+## Quickstart & Verification
+
+### Prerequisites
+
+- Docker Desktop
 - Python 3.11+
 
-### 2. Setup Environment
+### Installation & Execution
+
 ```bash
+# 1. Install virtual environment and dependencies
 make setup
-```
-*(Creates `.venv`, installs dependencies from `requirements.txt`, and copies `.env.example` to `.env`)*
 
-### 3. Start Infrastructure
-```bash
+# 2. Start PostgreSQL (pgvector) and LocalStack SQS
 make up
-```
-*(Boots Postgres 16 `pgvector` container on port `5433` and LocalStack SQS on port `4566`)*
 
-### 4. Launch API Server (Terminal 1)
-```bash
+# 3. Start API Server (Terminal 1)
 make api
-```
-*(Runs FastAPI server on http://localhost:8000. Interactive Swagger UI at http://localhost:8000/docs)*
 
-### 5. Launch Queue Worker (Terminal 2)
-```bash
+# 4. Start Queue Worker (Terminal 2)
 make worker
 ```
-*(Long-polls SQS, extracts workflows & triples, generates embeddings, and persists rows)*
 
-### 6. Run Test Suites & Verification (Terminal 3)
+### Running Tests (Terminal 3)
+
 ```bash
-# Run unit tests
+# Run unit test suite (25 tests)
 make test
 
-# Run Phase 1 pipeline verification
+# Run Phase 1 pipeline verification (19 checks)
 ./.venv/bin/python scripts/verify_e2e.py
 
-# Run Phase 2 governance & hybrid retrieval verification
+# Run Phase 2 governance & hybrid retrieval verification (16 checks)
 ./.venv/bin/python scripts/verify_phase2_e2e.py
 ```
 
-### 7. Inspect Live Database
+### Inspect Database State
+
 ```bash
 make psql
 ```
@@ -163,9 +155,20 @@ SELECT experience_id, from_tier, to_tier, reason FROM tier_transitions;
 
 ---
 
-## 🗺 Roadmap — Phase 3
+## API Reference Summary
 
-- [ ] **Real Model Provider**: Wire up `AnthropicLLM` (Claude Sonnet 3.5/4.5) / `GeminiLLM` via environment variable `LLM_PROVIDER`.
-- [ ] **100-Task Benchmark Harness**: Execute the standardized multi-agent benchmark workload across System A vs System B.
-- [ ] **AWS Cloud Deployment**: Deploy RDS PostgreSQL (`pgvector`), AWS SQS, and API/Worker containers on AWS App Runner / ECS.
-- [ ] **Final Empirical Paper & Charts**: Extract metric analytics via `GET /metrics`.
+- `GET /health` : Dependency liveness and readiness probe.
+- `POST /experiences` : Submit completed experience (Returns HTTP 202).
+- `GET /search` : Perform hybrid vector + full-text search.
+- `POST /experiences/{id}/reuse` : Report reuse outcome and trigger governance evaluation.
+- `GET /experiences/{id}` : Retrieve full experience record.
+- `GET /stats` : Basic row counts.
+- `GET /metrics` : Aggregate evaluation metrics and system analytics.
+
+---
+
+## Roadmap — Phase 3
+
+- [ ] Connect production LLM providers (`AnthropicLLM` / `GeminiLLM`) via environment variable `LLM_PROVIDER`.
+- [ ] Run 100-task multi-agent benchmark workload across System A vs System B.
+- [ ] Deploy production infrastructure to AWS (RDS PostgreSQL `pgvector`, AWS SQS, AWS App Runner / ECS).
