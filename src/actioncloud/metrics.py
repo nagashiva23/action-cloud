@@ -32,6 +32,9 @@ class MetricCalculator:
         """
         Aggregate all metrics from Postgres experiences table.
         """
+        if not run_id:
+            run_id = None
+
         with db.get_conn() as conn, conn.cursor() as cur:
             # Aggregate overall per-system metrics
             query = """
