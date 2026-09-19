@@ -13,7 +13,7 @@ SCHEMA_VERSION = "1.0.0"
 
 
 class AgentRole(str, Enum):
-    """The 5-6 agent roles from the proposal (Section 6.1)."""
+    """The 12 heterogeneous agent roles for fleet simulation."""
 
     RESEARCH = "research"
     CODING = "coding"
@@ -21,6 +21,12 @@ class AgentRole(str, Enum):
     DEPLOYMENT = "deployment"
     DOCUMENTATION = "documentation"
     DATA_ANALYSIS = "data_analysis"
+    SECURITY = "security"
+    DEVOPS = "devops"
+    DATABASE = "database"
+    ML = "ml"
+    CLOUD = "cloud"
+    MONITORING = "monitoring"
 
 
 class MemoryTier(str, Enum):

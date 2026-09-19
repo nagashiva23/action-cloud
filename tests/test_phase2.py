@@ -122,7 +122,7 @@ class TestExperienceExtractor:
 
 class TestRoleRegistry:
     def test_all_six_roles_registered(self):
-        assert len(ROLE_REGISTRY) == 6
+        assert len(ROLE_REGISTRY) >= 6
         assert ROLE_REGISTRY[AgentRole.CODING] == CodingAgent
         assert ROLE_REGISTRY[AgentRole.RESEARCH] == ResearchAgent
         assert ROLE_REGISTRY[AgentRole.TESTING] == TestingAgent

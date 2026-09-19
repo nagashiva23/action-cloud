@@ -29,6 +29,10 @@ app = FastAPI(
 from .embeddings import get_embedding_provider
 from .judge import MemoryJudge
 
+from .policy import MemorySelectionPolicy
+from .service import memory_service
+
+
 class StoreResponse(BaseModel):
     id: uuid.UUID
     queued: bool
@@ -41,6 +45,17 @@ class SearchResponse(BaseModel):
     results: list[ExperienceResult]
 
 
+class ContextRequest(BaseModel):
+    query: str
+    agent_id: Optional[str] = None
+    role: Optional[AgentRole] = None
+    candidate_k: Optional[int] = None
+    max_context_memories: Optional[int] = None
+    similarity_threshold: Optional[float] = None
+    context_token_budget: Optional[int] = None
+    redundancy_threshold: Optional[float] = None
+
+
 class ReuseReportRequest(BaseModel):
     success: bool
     agent_id: Optional[str] = None
@@ -50,15 +65,12 @@ class ReuseReportRequest(BaseModel):
 def health() -> dict:
     """
     Report on dependencies rather than just returning 200.
-
-    A health check that only proves the process is alive tells you nothing when
-    the interesting failure is 'API is up, Postgres is not'.
     """
     db_ok = db.health_check()
     try:
         queue.get_queue_url()
         queue_ok = True
-    except Exception as e:  # noqa: BLE001 - report, don't crash the probe
+    except Exception as e:  # noqa: BLE001
         log.warning("queue health check failed: %s", e)
         queue_ok = False
 
@@ -80,22 +92,14 @@ def store_experience(payload: ExperienceCreate) -> StoreResponse:
     """
     Accept a completed experience.
     """
-    exp = Experience(**payload.model_dump())
-
-    if settings.sync_write:
-        db.insert_experience(exp)
-        return StoreResponse(id=exp.id, queued=False, message="written synchronously")
-
     try:
-        queue.publish("experience.created", exp.model_dump(mode="json"))
-    except Exception as e:  # noqa: BLE001
-        log.exception("failed to publish experience")
+        res = memory_service.store_experience(payload)
+        return StoreResponse(**res)
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"could not queue experience: {e}",
         ) from e
-
-    return StoreResponse(id=exp.id, queued=True, message="queued for processing")
 
 
 @app.get("/search", response_model=SearchResponse)
@@ -113,30 +117,32 @@ def search(
     """
     Phase 2 hybrid retrieval: vector similarity + Postgres full-text ranking.
     """
-    embedder = get_embedding_provider()
-    query_vector = embedder.embed(q)
-
-    rows = db.hybrid_search_experiences(
-        query=q, query_vector=query_vector, limit=limit, min_tier=min_tier, agent_id=agent_id
+    results = memory_service.search_memory(
+        query=q, limit=limit, min_tier=min_tier, agent_id=agent_id
     )
-    results = [
-        ExperienceResult(
-            id=r["id"],
-            task=r["task"],
-            problem=r["problem"],
-            solution=r["solution"],
-            result=r["result"],
-            technologies=r["technologies"],
-            tools_used=r["tools_used"],
-            success=r["success"],
-            tier=MemoryTier(r["tier"]),
-            confidence=r["confidence"],
-            workflow=r.get("workflow"),
-            relevance=float(r["relevance"]) if r.get("relevance") is not None else None,
-        )
-        for r in rows
-    ]
     return SearchResponse(query=q, count=len(results), results=results)
+
+
+@app.post("/context")
+def prepare_context(req: ContextRequest) -> dict:
+    """
+    Adaptive context preparation endpoint (Search -> Governance -> Ranking -> Redundancy -> Token Budget).
+    """
+    pol = MemorySelectionPolicy.from_env()
+    if req.candidate_k is not None:
+        pol.candidate_k = req.candidate_k
+    if req.max_context_memories is not None:
+        pol.max_context_memories = req.max_context_memories
+    if req.similarity_threshold is not None:
+        pol.similarity_threshold = req.similarity_threshold
+    if req.context_token_budget is not None:
+        pol.context_token_budget = req.context_token_budget
+    if req.redundancy_threshold is not None:
+        pol.redundancy_threshold = req.redundancy_threshold
+
+    return memory_service.prepare_context(
+        query=req.query, agent_id=req.agent_id, role=req.role, policy=pol
+    )
 
 
 @app.post("/experiences/{experience_id}/reuse")
@@ -147,32 +153,21 @@ def report_experience_reuse(
     """
     Record an experience reuse event and trigger MemoryJudge evaluation.
     """
-    row = db.record_experience_reuse(experience_id, success=payload.success)
-    if row is None:
+    try:
+        return memory_service.record_reuse(
+            experience_id=experience_id, success=payload.success, agent_id=payload.agent_id
+        )
+    except KeyError:
         raise HTTPException(status_code=404, detail="experience not found")
-
-    transition = MemoryJudge.evaluate_reuse(row)
-    current_tier = transition[0].value if transition else row["tier"]
-    return {
-        "id": str(experience_id),
-        "reuse_count": row["reuse_count"],
-        "reuse_success_count": row["reuse_success_count"],
-        "tier": current_tier,
-        "transition": transition[0].value if transition else None,
-    }
 
 
 @app.get("/experiences/{experience_id}")
 def get_experience(experience_id: uuid.UUID) -> dict:
     """Full record including governance fields — for debugging and auditing."""
-    row = db.get_experience(experience_id)
+    row = memory_service.get_experience(experience_id)
     if row is None:
         raise HTTPException(status_code=404, detail="experience not found")
-    row.pop("embedding", None)  # a 1536-float array is noise in a JSON response
     return row
-
-
-from .metrics import MetricCalculator
 
 
 @app.get("/stats")
@@ -186,7 +181,7 @@ def get_metrics(run_id: Optional[str] = None) -> dict:
     """
     Calculate full evaluation metrics (KRR, Redundancy Index, Token Savings, Latency, Cost).
     """
-    return MetricCalculator.calculate_run_metrics(run_id)
+    return memory_service.get_metrics(run_id)
 
 
 @app.on_event("shutdown")

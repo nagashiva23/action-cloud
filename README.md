@@ -1,130 +1,95 @@
 # ActionCloud
 
-Cloud-native distributed experience memory service for multi-agent LLM systems.
+Cloud-Native Governed Adaptive Experience Memory Platform for Autonomous Agent Fleets.
 
-ActionCloud enables autonomous agent fleets to share procedural knowledge and eliminate redundant execution while enforcing strict governance to prevent false or unproven memories from corrupting shared fleet state.
+ActionCloud is a production-ready, governed agent memory tool that captures, extracts, embeds, stores, retrieves, and governs procedural knowledge across heterogeneous AI agent fleets. Built around a core design principle—**maximizing useful memory density per prompt token rather than maximizing retrieved context size**—ActionCloud uses adaptive context selection, redundancy filtering, compact procedural formatting, and automated multi-tier governance to eliminate redundant agent execution without bloating context windows or corrupting fleet memory state.
 
 ---
 
-## Tech Stack & Tools
+## Technical Architecture
+
+```mermaid
+graph TD
+    subgraph Clients
+        MCP[MCP Clients<br/>Cursor / Antigravity / Claude Desktop]
+        REST[REST API Clients<br/>FastAPI / HTTP Agents]
+    end
+
+    subgraph Service Layer
+        MS[MemoryService Singleton]
+        MSP[MemorySelectionPolicy<br/>K_search=10, K_inject=2, Redundancy=0.85]
+        CCB[CompactContextBuilder<br/>Token Budgeting & Markdown Formatting]
+        MJ[MemoryJudge Governance Engine<br/>5-Tier Ladder & Promotion/Demotion]
+    end
+
+    subgraph Infrastructure Layer
+        SQS[AWS SQS / LocalStack Queue]
+        Worker[Background Worker<br/>LLM Extractor & Unit-Normalized Vector Embedder]
+        DB[(PostgreSQL 16<br/>pgvector 1536-dim + Full-Text Search)]
+    end
+
+    MCP -->|Stdio Protocol| MS
+    REST -->|HTTP REST| MS
+    MS -->|Query & Context Req| MSP
+    MSP -->|Filter & Budget| CCB
+    MS -->|Ingest Async| SQS
+    SQS --> Worker
+    Worker -->|Idempotent Write| DB
+    MS -->|Governed Read| DB
+    MS -->|Report Reuse| MJ
+    MJ -->|Update Tier & Transition| DB
+```
+
+---
+
+## Tech Stack & Core Dependencies
 
 | Layer | Tools & Technologies | Description |
 | :--- | :--- | :--- |
-| **API & Core** | Python 3.11+, FastAPI, Uvicorn, Pydantic v2 | High-performance asynchronous REST API and data validation |
-| **Storage & Search** | PostgreSQL 16, pgvector, Full-Text Search (FTS) | Relational datastore with dense 1536-dim vector similarity and keyword ranking |
-| **Messaging** | Amazon SQS, LocalStack | Decoupled asynchronous queue processing (LocalStack for offline dev) |
-| **IDE Integration** | Model Context Protocol (MCP), `mcp_server.py` | Native IDE and desktop assistant integration (Cursor, Antigravity, Claude Desktop) |
-| **LLM & Embeddings** | Anthropic Claude API, Google Gemini API, boto3 | Model providers and official AWS SDK integration |
-| **DevOps & Hosting** | Docker, Docker Compose, AWS App Runner, AWS ECS Fargate, AWS RDS | Container orchestration, managed cloud web services, and serverless compute |
-| **Testing** | Pytest, HTTPX | Unit testing and HTTP client end-to-end verification |
+| **API & Core** | Python 3.11+, FastAPI, Uvicorn, Pydantic v2 | High-performance asynchronous REST API, context endpoints, and data validation |
+| **Service & Policy Layer** | `MemoryService`, `MemorySelectionPolicy`, `CompactContextBuilder` | Unified internal abstraction for adaptive selection, token budgeting, and redundancy filtering |
+| **IDE & MCP Server** | Model Context Protocol (MCP Stdio), `mcp_server.py` | Native IDE and desktop assistant integration for Cursor, Antigravity, and Claude Desktop |
+| **Storage & Search** | PostgreSQL 16, pgvector, Full-Text Search (FTS) | Relational datastore with 1536-dim dense vector similarity and keyword ranking (`ts_rank`) |
+| **Messaging & Workers** | Amazon SQS, LocalStack, Background Async Worker | Decoupled non-blocking ingestion queue and procedural workflow extraction |
+| **LLM & Embeddings** | Anthropic Claude API, Google Gemini API, boto3 | Multi-provider LLM support for knowledge extraction and embedding generation |
+| **DevOps & Testing** | Docker, Docker Compose, Pytest | Container orchestration and comprehensive unit/integration test suite |
 
 ---
 
-## Architecture Overview
+## Core Architectural Pillars
 
-```
-                              ┌──────────────────────────────────┐
-                              │           Agent Fleet            │
-                              │ (System A: Baseline / System B)  │
-                              └────────┬─────────────────▲───────┘
-                                       │                 │
-                           POST /experiences (202)  GET /search (Sync)
-                                       │                 │
-                                       ▼                 │
-                              ┌──────────────────┐       │
-                              │  FastAPI Server  │───────┤
-                              └────────┬─────────┘       │
-                                       │                 │
-                                 Publish SQS             │
-                                       │                 │
-                                       ▼                 │
-                             ┌──────────────────┐        │
-                             │  SQS Queue       │        │
-                             │  (LocalStack)    │        │
-                             └────────┬─────────┘        │
-                                       │                 │
-                                  Long-Poll              │
-                                       │                 │
-                                       ▼                 │
-                             ┌──────────────────┐        │
-                             │  Queue Worker    │        │
-                             │ (LLM Extractor + │        │
-                             │ Vector Embedder) │        │
-                             └────────┬─────────┘        │
-                                       │                 │
-                                 Idempotent Insert       │
-                                       │                 │
-                                       ▼                 │
-                             ┌──────────────────┐        │
-                             │ PostgreSQL       │────────┘
-                             │ (pgvector + FTS) │
-                             └──────────────────┘
-```
+### 1. Adaptive Context Selection & Token Budgeting
 
-### Core Design Principles
+Instead of injecting arbitrary numbers of memories into an agent prompt, ActionCloud uses a dual-parameter selection policy:
+* **Candidate Retrieval Window ($K_{\text{search}} = 10$)**: Fetches top candidate memories via hybrid vector similarity and keyword search.
+* **Context Injection Window ($K_{\text{inject}} = 1\dots 2$)**: Limits injected memories to only the most relevant, non-redundant items.
+* **Redundancy Filtering ($\text{Similarity} < 0.85$)**: Filters out near-duplicate procedural memories using sequence similarity evaluation.
+* **Strict Token Budgeting ($\le 1000\text{ tokens}$)**: Truncates context blocks to fit strict token boundaries, measuring token counts with exact or heuristic estimation.
+* **Compact Procedural Formatting**: Formats retrieved experiences into structured, token-efficient Markdown containing explicit Prerequisites, Executed Steps, and Known Pitfalls.
 
-1. **Non-Blocking Asynchronous Writes (`HTTP 202`)**: Memory submission is decoupled from agent execution via SQS message queues and background workers. Agents write memories without incurring task latency overhead.
-2. **Synchronous Hybrid Search**: Agents execute fast, governed reads combining `pgvector` 1536-dimensional dense vector similarity with PostgreSQL full-text keyword ranking (`ts_rank`).
-3. **Governed Trust Management**: Memories enter untrusted and climb a 5-tier governance ladder based on observed reuse success.
-4. **Equalized A/B Benchmark Harness**: System A (Stateless Baseline) and System B (ActionCloud Memory) share identical agent execution paths (`Agent(use_memory=False)` vs `Agent(use_memory=True)`), ensuring rigorous experimental comparisons.
+### 2. Governed 5-Tier Memory Ladder
 
----
-
-## Memory Governance Engine
-
-ActionCloud enforces a 5-tier governance model managed by the `MemoryJudge` engine:
+Memories enter the system unvalidated and climb or fall along a strict trust hierarchy managed by `MemoryJudge`:
 
 $$\text{PRIVATE} \longrightarrow \text{AGENT} \longrightarrow \text{SHARED} \longrightarrow \text{VALIDATED} \longrightarrow \text{ORGANIZATIONAL}$$
 
-* **PRIVATE**: Visible only to the run that created it. Failed task executions remain private.
-* **AGENT**: Visible to the creating agent across runs. Initial successful tasks land here.
-* **SHARED**: Visible fleet-wide once promoted through a verified successful reuse.
+* **PRIVATE**: Visible only to the run that created it. Failed execution attempts remain private to prevent fleet-wide failure propagation.
+* **AGENT**: Visible to the creating agent across runs. Initial successful executions land here.
+* **SHARED**: Promoted fleet-wide upon verified successful reuse.
 * **VALIDATED**: Proven by $\ge 3$ recorded reuses with $\ge 80\%$ success rate.
 * **ORGANIZATIONAL**: Canonical fleet knowledge ($\ge 10$ reuses with $\ge 90\%$ success rate).
-* **Automatic Demotion**: Memories with low reuse success ($< 40\%$ across $\ge 3$ reuses) are automatically demoted to `PRIVATE`.
-* **Audit Lineage**: Every tier transition is logged immutably in the `tier_transitions` audit table.
+* **Automatic Demotion**: Memories with reuse success falling below $40\%$ across $\ge 3$ reuses are automatically demoted back to `PRIVATE`.
+* **Immutable Audit Lineage**: Every promotion and demotion event is recorded in the `tier_transitions` audit table.
 
 ---
 
-## Intelligence & Hybrid Retrieval
+## Model Context Protocol (MCP) Integration
 
-* **LLM Extraction Worker (`extractor.py`)**: Asynchronously parses execution logs into procedural workflows (JSON step sequences) and subject-predicate-object knowledge triples.
-* **Dense Vector Embeddings (`embeddings.py`)**: Generates 1536-dimensional unit-normalized vector embeddings for PostgreSQL `pgvector` storage.
-* **Hybrid Search Engine (`db.py`)**: Fuses full-text keyword search and vector similarity:
-  $$\text{Relevance} = 0.5 \times \text{FTS\_Rank} + 0.5 \times \text{Vector\_Similarity}$$
-* **Reuse Feedback Endpoint (`api.py`)**: `POST /experiences/{id}/reuse` records agent reuse outcomes and triggers real-time tier promotion or demotion.
+ActionCloud provides a native **MCP Stdio Server** (`actioncloud.mcp_server`), exposing memory capabilities directly to AI IDEs (Cursor, Antigravity, Windsurf, VS Code) and Claude Desktop.
 
----
+### Configuration
 
-## Agent Fleet Roles
-
-Implements all 6 proposal agent roles in `ROLE_REGISTRY` (`roles.py`):
-- `CodingAgent` (`AgentRole.CODING`)
-- `ResearchAgent` (`AgentRole.RESEARCH`)
-- `TestingAgent` (`AgentRole.TESTING`)
-- `DeploymentAgent` (`AgentRole.DEPLOYMENT`)
-- `DocumentationAgent` (`AgentRole.DOCUMENTATION`)
-- `DataAnalysisAgent` (`AgentRole.DATA_ANALYSIS`)
-
----
-
-## System Metrics & Analytics Engine
-
-Accessible via `GET /metrics`:
-- **Knowledge Reuse Rate (KRR %)**
-- **Redundancy Index (RI)**
-- **Cumulative Token Savings (%)**
-- **Financial Cost Savings (% USD)**
-- **Task Execution Latency (mean ms)**
-- **Governance Tier Distribution**
-
----
-
-## Model Context Protocol (MCP) Server Integration
-
-ActionCloud provides a native **MCP Stdio Server** (`mcp_server.py`), allowing IDEs (Cursor, Antigravity, Windsurf, VS Code) and Claude Desktop to access ActionCloud memory tools directly within your editor.
-
-### Configuration (`.cursor/mcp.json` or `claude_desktop_config.json`)
+Add ActionCloud to your `.cursor/mcp.json` or `claude_desktop_config.json`:
 
 ```json
 {
@@ -133,7 +98,8 @@ ActionCloud provides a native **MCP Stdio Server** (`mcp_server.py`), allowing I
       "command": "python",
       "args": ["-m", "actioncloud.mcp_server"],
       "env": {
-        "PYTHONPATH": "src"
+        "PYTHONPATH": "src",
+        "DATABASE_URL": "postgresql://actioncloud:actioncloud@localhost:5433/actioncloud"
       }
     }
   }
@@ -142,83 +108,116 @@ ActionCloud provides a native **MCP Stdio Server** (`mcp_server.py`), allowing I
 
 ### Exposed MCP Tools
 
-1. `search_fleet_memory(query, limit)` : Search ActionCloud shared memory for past solutions and workflows.
-2. `store_experience(task, action, result, success, problem, solution)` : Submit new task experiences.
-3. `report_memory_reuse(experience_id, success)` : Report reuse outcome and trigger governance evaluation.
-4. `get_fleet_metrics()` : Retrieve system-wide token savings and governance analytics.
+| Tool Name | Parameters | Description |
+| :--- | :--- | :--- |
+| `get_memory_context` | `task` (str), `agent_role` (str, opt), `k_inject` (int, opt) | Formats a compact, token-budgeted memory context block for direct prompt injection. |
+| `search_memory` | `query` (str), `agent_role` (str, opt), `limit` (int, opt) | Performs hybrid vector + full-text search across ActionCloud fleet memory. |
+| `remember_experience` | `task` (str), `action_taken` (str), `result` (str), `success` (bool), `agent_id` (str), `agent_role` (str) | Submits a completed agent execution experience asynchronously for indexing and governance. |
+| `reuse_memory` | `experience_id` (str), `success` (bool), `agent_id` (str) | Reports experience reuse outcome, triggering real-time tier promotion or demotion. |
+| `get_memory_metrics` | None | Returns aggregate governance analytics, knowledge reuse rate, and token savings. |
+
+*Note: Backward-compatible aliases (`search_fleet_memory`, `store_experience`, `report_memory_reuse`, `get_fleet_metrics`) are supported.*
 
 ---
 
-## Quickstart & Verification
+## Multi-Role Agent Fleet Support
 
-### Prerequisites
+ActionCloud supports a 12-role heterogeneous agent fleet across diverse engineering domains:
 
-- Docker Desktop
-- Python 3.11+
+1. `CODING` - Application & algorithmic software development
+2. `RESEARCH` - Literature, API documentation & pattern analysis
+3. `TESTING` - Unit, integration & automated test suite execution
+4. `DEPLOYMENT` - CI/CD pipeline automation & release execution
+5. `DOCUMENTATION` - Technical writing & architecture documentation
+6. `DATA_ANALYSIS` - Data pipeline execution & statistical reporting
+7. `SECURITY` - Vulnerability scanning & security policy auditing
+8. `DEVOPS` - Infrastructure configuration & environment management
+9. `DATABASE` - Schema migrations & query performance optimization
+10. `ML` - Machine learning model training & inference pipelines
+11. `CLOUD` - Cloud service provisioning & IAM configuration
+12. `MONITORING` - Observability, alerting & log analysis
 
-### Installation & Execution
+---
+
+## System Analytics & Metrics Engine
+
+Accessible via `GET /metrics` or `get_memory_metrics`:
+* **Knowledge Reuse Rate (KRR %)**: Percentage of task executions utilizing existing fleet memory.
+* **Redundancy Index (RI)**: Ratio of redundant candidate memories filtered out prior to injection.
+* **Cumulative Token Savings (%)**: Token overhead avoided by replacing raw execution histories with compact procedural context.
+* **Financial Cost Savings (% USD)**: Calculated LLM API cost savings based on token reduction.
+* **Governance Tier Distribution**: Real-time breakdown of experiences across `PRIVATE`, `AGENT`, `SHARED`, `VALIDATED`, and `ORGANIZATIONAL` tiers.
+
+---
+
+## Heterogeneous Fleet Simulation & Verification
+
+ActionCloud includes a 100-agent fleet simulation script (`scripts/run_fleet_simulation.py`) that demonstrates memory propagation, cross-role knowledge sharing, and governance promotion.
 
 ```bash
-# 1. Install virtual environment and dependencies
+# Execute 100-agent simulation across 10 task iterations
+PYTHONPATH=src ./.venv/bin/python scripts/run_fleet_simulation.py --agents 100
+```
+
+### Simulated Results Summary (100 Agents / 1000 Tasks)
+* **Agents Active**: 100 agents across 12 Fleet Roles
+* **Total Tasks Executed**: 1,000 tasks
+* **Failures Injected & Recovered**: 10 initial failures isolated to `PRIVATE` tier
+* **Memories Injected**: 1,000 relevant context blocks
+* **Redundant Memories Filtered**: 1,000 candidate blocks suppressed by policy
+* **Cross-Role Knowledge Reuses**: 1,000 recorded governance feedback events
+* **Final Governance Distribution**: 9 `AGENT`, 17 `SHARED`, 20 `VALIDATED`
+
+---
+
+## Quickstart & Local Setup
+
+### Prerequisites
+* Docker Desktop
+* Python 3.11+
+
+### 1. Installation & Environment Setup
+```bash
+# Create virtual environment and install dependencies
 make setup
+```
 
-# 2. Start PostgreSQL (pgvector) and LocalStack SQS
+### 2. Start Infrastructure (PostgreSQL pgvector & LocalStack SQS)
+```bash
 make up
+```
 
-# 3. Start API Server (Terminal 1)
+### 3. Run Test Suite
+```bash
+# Execute all 40 unit and integration tests
+PYTHONPATH=src ./.venv/bin/pytest tests/
+```
+
+### 4. Start Server Infrastructure (Optional for REST API)
+```bash
+# Terminal 1: Start REST API daemon
 make api
 
-# 4. Start Queue Worker (Terminal 2)
+# Terminal 2: Start Queue Worker
 make worker
 ```
 
-### Running Tests & Benchmarks
+---
 
-```bash
-# Run complete unit test suite (31 tests across Phase 1, Phase 2, and Phase 3)
-make test
+## REST API Reference
 
-# Run Phase 1 end-to-end pipeline verification (19 checks)
-PYTHONPATH=src ./.venv/bin/python scripts/verify_e2e.py
-
-# Run Phase 2 governance & hybrid retrieval verification (16 checks)
-PYTHONPATH=src ./.venv/bin/python scripts/verify_phase2_e2e.py
-
-# Run Phase 3 automated benchmark harness across 100 tasks (System A vs System B)
-PYTHONPATH=src ./.venv/bin/python scripts/run_benchmark.py --provider mock --limit 10
-
-# Generate empirical evaluation report (Knowledge Reuse Rate, Token Savings, Cost Savings)
-PYTHONPATH=src ./.venv/bin/python scripts/evaluate_results.py
-```
-
-### Inspect Database State
-
-```bash
-make psql
-```
-```sql
-SELECT agent_role, task, tier, confidence FROM experiences ORDER BY created_at DESC LIMIT 5;
-SELECT experience_id, from_tier, to_tier, reason FROM tier_transitions;
-\q
-```
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/health` | `GET` | Health check for API, PostgreSQL database, and SQS queue |
+| `/experiences` | `POST` | Asynchronously ingest an agent experience (Returns `202 Accepted`) |
+| `/search` | `GET` | Perform hybrid vector + full-text search over governed experiences |
+| `/context` | `POST` | Generate compact, token-budgeted memory context block for task prompt |
+| `/experiences/{id}/reuse` | `POST` | Record reuse outcome and evaluate governance tier promotion/demotion |
+| `/experiences/{id}` | `GET` | Retrieve full experience details by ID |
+| `/metrics` | `GET` | Aggregate governance analytics, token savings, and system metrics |
 
 ---
 
-## API Reference Summary
+## License
 
-- `GET /health` : Dependency liveness and readiness probe.
-- `POST /experiences` : Submit completed experience (Returns HTTP 202).
-- `GET /search` : Perform hybrid vector + full-text search.
-- `POST /experiences/{id}/reuse` : Report reuse outcome and trigger governance evaluation.
-- `GET /experiences/{id}` : Retrieve full experience record.
-- `GET /stats` : Basic row counts.
-- `GET /metrics` : Aggregate evaluation metrics and system analytics.
-
----
-
-## Roadmap & Status — Phase 1, 2 & 3 Complete
-
-- [x] Phase 1: Core Async Experience Ingestion & Search Engine (FastAPI, PostgreSQL pgvector, SQS, Worker).
-- [x] Phase 2: Memory Governance & Multi-Agent Role Registry (5-Tier Ladder, MemoryJudge, 6 Agent Roles, Hybrid Search).
-- [x] Phase 3: Multi-Provider LLM Integration, Native MCP Server, 100-Task Benchmark Harness & Empirical Evaluator.
-- [ ] Production Cloud Deployment (AWS RDS PostgreSQL pgvector, AWS SQS, AWS App Runner / ECS Fargate).
+Apache 2.0 License. See `LICENSE` for details.

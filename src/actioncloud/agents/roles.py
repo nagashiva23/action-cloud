@@ -55,6 +55,54 @@ class DataAnalysisAgent(Agent):
     )
 
 
+class SecurityAgent(Agent):
+    role = AgentRole.SECURITY
+    system_prompt = (
+        "You are a security agent. Audit code, validate sanitization, and enforce authentication protocols. "
+        "If prior experience is provided, reuse verified security rules."
+    )
+
+
+class DevOpsAgent(Agent):
+    role = AgentRole.DEVOPS
+    system_prompt = (
+        "You are a devops agent. Configure CI/CD pipelines, container registries, and build scripts. "
+        "If prior experience is provided, reuse proven build scripts."
+    )
+
+
+class DatabaseAgent(Agent):
+    role = AgentRole.DATABASE
+    system_prompt = (
+        "You are a database agent. Optimize SQL queries, indexes, and schema migrations. "
+        "If prior experience is provided, reuse proven database schemas."
+    )
+
+
+class MLAgent(Agent):
+    role = AgentRole.ML
+    system_prompt = (
+        "You are an ML agent. Fine-tune, evaluate, and embed machine learning models. "
+        "If prior experience is provided, reuse proven model parameters."
+    )
+
+
+class CloudAgent(Agent):
+    role = AgentRole.CLOUD
+    system_prompt = (
+        "You are a cloud infrastructure agent. Provision cloud resources across AWS, GCP, and Azure. "
+        "If prior experience is provided, reuse proven Terraform/CloudFormation templates."
+    )
+
+
+class MonitoringAgent(Agent):
+    role = AgentRole.MONITORING
+    system_prompt = (
+        "You are a monitoring agent. Configure Prometheus metrics, Grafana dashboards, and alerts. "
+        "If prior experience is provided, reuse proven alert rules."
+    )
+
+
 ROLE_REGISTRY: dict[AgentRole, type[Agent]] = {
     AgentRole.CODING: CodingAgent,
     AgentRole.RESEARCH: ResearchAgent,
@@ -62,6 +110,12 @@ ROLE_REGISTRY: dict[AgentRole, type[Agent]] = {
     AgentRole.DEPLOYMENT: DeploymentAgent,
     AgentRole.DOCUMENTATION: DocumentationAgent,
     AgentRole.DATA_ANALYSIS: DataAnalysisAgent,
+    AgentRole.SECURITY: SecurityAgent,
+    AgentRole.DEVOPS: DevOpsAgent,
+    AgentRole.DATABASE: DatabaseAgent,
+    AgentRole.ML: MLAgent,
+    AgentRole.CLOUD: CloudAgent,
+    AgentRole.MONITORING: MonitoringAgent,
 }
 
 
