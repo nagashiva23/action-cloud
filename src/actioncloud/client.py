@@ -44,6 +44,7 @@ class ActionCloudClient:
         agent_role: AgentRole,
         base_url: str = DEFAULT_BASE_URL,
         timeout: float = 10.0,
+        api_key: Optional[str] = None,
     ) -> None:
         # These are *defaults*. Every call accepts an override, because a single
         # client is often shared by several agents with different identities —
@@ -52,7 +53,12 @@ class ActionCloudClient:
         self.agent_id = agent_id
         self.agent_role = agent_role
         self.base_url = base_url.rstrip("/")
-        self._http = httpx.Client(base_url=self.base_url, timeout=timeout)
+        # The API derives identity from this key; agent_id/agent_role above
+        # must match the key's agent (the server returns 403 otherwise).
+        import os  # noqa: PLC0415
+        key = api_key or os.environ.get("ACTIONCLOUD_API_KEY")
+        headers = {"X-API-Key": key} if key else {}
+        self._http = httpx.Client(base_url=self.base_url, timeout=timeout, headers=headers)
 
     # -- lifecycle ---------------------------------------------------------
 

@@ -144,6 +144,9 @@ class MemoryService:
         context_str, injected_ids, candidate_count, final_count = (
             CompactContextBuilder.build_context(candidates, pol)
         )
+        # Ledger for governance: reuse credit is only granted against these.
+        if agent_id and injected_ids:
+            db.record_injections(injected_ids, agent_id)
         injected = {str(i) for i in injected_ids}
         return {
             "query": query,
@@ -198,7 +201,7 @@ class MemoryService:
             "transition": transition["to"] if transition else None,
             "reason": (
                 transition["reason"] if transition
-                else "Self-report ignored" if not res["counted"]
+                else f"Not counted: {res['why']}" if not res["counted"]
                 else "Tier maintained"
             ),
         }

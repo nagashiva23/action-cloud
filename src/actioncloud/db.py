@@ -167,6 +167,59 @@ def insert_enriched_experience(
     return True
 
 
+def record_injections(experience_ids: list[uuid.UUID | str], agent_id: str) -> None:
+    """Ledger entry: these memories were put in front of this agent."""
+    if not experience_ids:
+        return
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.executemany(
+            "INSERT INTO injections (experience_id, agent_id) VALUES (%s, %s)",
+            [(str(e), agent_id) for e in experience_ids],
+        )
+        conn.commit()
+
+
+def _reuse_is_countable(cur, row: dict, reporter: str, success: bool) -> tuple[bool, str]:
+    """
+    Decide whether a reuse report counts, consuming an injection if it does.
+
+    * Another agent's report counts only against an unreported injection of
+      this memory to that agent — one injection, at most one counted report.
+    * The author's positive report never counts (no vouching for yourself).
+    * The author's negative report counts once ("my solution turned out
+      wrong"); repeats are ignored so an author cannot bury a rival version.
+    """
+    exp_id = row["id"]
+    if reporter == row["agent_id"]:
+        if success:
+            return False, "positive self-report ignored"
+        cur.execute(
+            "SELECT 1 FROM reuse_events WHERE experience_id = %s AND reporter_agent_id = %s "
+            "AND counted AND NOT success LIMIT 1",
+            (exp_id, reporter),
+        )
+        if cur.fetchone():
+            return False, "author already reported this memory as failed"
+        return True, "author reported own memory as failed"
+
+    cur.execute(
+        """
+        UPDATE injections SET reported_at = now()
+        WHERE id = (
+            SELECT id FROM injections
+            WHERE experience_id = %s AND agent_id = %s AND reported_at IS NULL
+            ORDER BY created_at LIMIT 1
+            FOR UPDATE SKIP LOCKED
+        )
+        RETURNING id
+        """,
+        (exp_id, reporter),
+    )
+    if cur.fetchone() is None:
+        return False, "no unreported injection of this memory to this agent"
+    return True, "counted against injection"
+
+
 def apply_reuse(
     experience_id: uuid.UUID,
     success: bool,
@@ -180,8 +233,8 @@ def apply_reuse(
 
     The row is locked (SELECT ... FOR UPDATE) for the whole read-decide-write,
     so concurrent reports serialise instead of racing on stale counts.
-    Positive self-reports (reporter == author, success) are logged in
-    reuse_events but not counted; negative self-reports are counted.
+    Every report is logged in reuse_events; whether it COUNTS toward the
+    memory's governance state is decided by _reuse_is_countable.
     """
     with get_conn() as conn:
         with conn.cursor() as cur:
@@ -193,10 +246,7 @@ def apply_reuse(
                 conn.rollback()
                 return None
 
-            # Self-reports can only ever count AGAINST a memory: an author
-            # admitting its own solution failed downstream is valid evidence,
-            # an author vouching for itself is not.
-            counted = reporter_agent_id != row["agent_id"] or not success
+            counted, why = _reuse_is_countable(cur, row, reporter_agent_id, success)
             cur.execute(
                 """
                 INSERT INTO reuse_events (experience_id, reporter_agent_id, success, counted)
@@ -255,7 +305,7 @@ def apply_reuse(
         conn.commit()
 
     row.pop("embedding", None)
-    return {"row": row, "counted": counted, "transition": transition}
+    return {"row": row, "counted": counted, "why": why, "transition": transition}
 
 
 def record_tier_transition(

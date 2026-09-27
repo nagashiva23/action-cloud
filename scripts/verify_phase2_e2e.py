@@ -44,13 +44,24 @@ def check(label: str, ok: bool, detail: str = "") -> bool:
     return ok
 
 
+
+def client_for(agent_id: str, role: AgentRole) -> ActionCloudClient:
+    """
+    Register (or re-key) a verification agent and return a client holding
+    its API key. The API derives identity from the key, so every agent needs
+    its own client — one shared client can no longer act for several agents.
+    Uses the database directly, like the rest of this dev script.
+    """
+    from actioncloud.auth import register_agent  # noqa: PLC0415
+    key = register_agent(agent_id, role, rotate=True)
+    return ActionCloudClient(agent_id=agent_id, agent_role=role, base_url=BASE_URL, api_key=key)
+
 def main() -> int:
     run_id = f"phase2-{uuid.uuid4().hex[:8]}"
     print(f"\nActionCloud Phase 2 Verification  (run_id={run_id})\n")
 
-    client = ActionCloudClient(
-        agent_id="deployment-verify", agent_role=AgentRole.DEPLOYMENT, base_url=BASE_URL
-    )
+    client = client_for("deployment-agent-01", AgentRole.DEPLOYMENT)      # the author
+    reviewer = client_for("deployment-verify", AgentRole.DEPLOYMENT)      # a peer who reuses it
 
     # 1. Submit Experience
     print("1. Submitting experience via DeploymentAgent...")
@@ -109,7 +120,13 @@ def main() -> int:
 
     # 4. Reuse Feedback & Governance Promotion
     print("\n4. Testing Reuse Feedback & Tier Promotion (AGENT -> SHARED)...")
-    reuse_resp = client.report_reuse(outcome.experience_id, success=True)
+    # Reuse credit requires that the memory was actually injected for the
+    # reporting agent, so the peer asks for context first.
+    ctx = reviewer.context(query=PROBE_TASK, technologies=["fastapi", "aws", "pgvector"],
+                           scope_run_id=run_id)
+    check("Peer received the probe memory as context",
+          str(outcome.experience_id) in ctx.get("injected_experience_ids", []))
+    reuse_resp = reviewer.report_reuse(outcome.experience_id, success=True)
     check("Reuse endpoint acknowledged feedback", reuse_resp.get("reuse_count") == 1)
     check("MemoryJudge promoted experience to SHARED tier", reuse_resp.get("tier") == "shared")
     check("Transition recorded", reuse_resp.get("transition") == "shared")
@@ -129,6 +146,7 @@ def main() -> int:
         check("Reuse promotion to shared logged in audit trail", transitions[1]["to_tier"] == "shared")
 
     client.close()
+    reviewer.close()
     db.close_pool()
 
     print(f"\n{'-' * 60}")

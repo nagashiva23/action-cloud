@@ -47,6 +47,16 @@ class Settings:
     # it would change the latency profile you are trying to measure.
     sync_write: bool = field(default_factory=lambda: _env_bool("SYNC_WRITE", False))
 
+    # --- Auth -------------------------------------------------------------
+    # REST callers must present an agent API key (X-API-Key). Identity and
+    # role come from the key, never from the request body. Turn off only for
+    # throwaway local experiments.
+    auth_required: bool = field(default_factory=lambda: _env_bool("AUTH_REQUIRED", True))
+    # Separate key for registering / revoking agents (POST/DELETE /agents).
+    admin_key: str | None = field(
+        default_factory=lambda: os.environ.get("ACTIONCLOUD_ADMIN_KEY") or None
+    )
+
     # A full DATABASE_URL (what the README's MCP config sets) wins over the
     # individual DB_* fields when present.
     database_url: str | None = field(

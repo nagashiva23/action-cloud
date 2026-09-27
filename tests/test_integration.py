@@ -102,12 +102,53 @@ def test_promotion_by_another_agent_is_audited(svc, run_id):
     from actioncloud import db
 
     eid = svc.store_experience(_create(run_id))["id"]
+    _inject(svc, run_id, "peer")
     r = svc.record_reuse(eid, success=True, agent_id="peer")
     assert r["transition"] == "shared"
     with db.get_conn() as conn, conn.cursor() as cur:
         cur.execute("SELECT from_tier::text, to_tier::text FROM tier_transitions "
                     "WHERE experience_id = %s ORDER BY id", (eid,))
         assert [(t["from_tier"], t["to_tier"]) for t in cur.fetchall()] == [(None, "agent"), ("agent", "shared")]
+
+
+def _inject(svc, run_id, agent_id, role=AgentRole.CODING):
+    return svc.prepare_context("Configure pgvector HNSW index for cosine search",
+                               agent_id=agent_id, role=role,
+                               technologies=["postgres", "pgvector"], scope_run_id=run_id,
+                               policy=MemorySelectionPolicy())
+
+
+def test_report_without_injection_not_counted(svc, run_id):
+    """Exploit: reporting on a memory you were never shown."""
+    eid = svc.store_experience(_create(run_id))["id"]
+    r = svc.record_reuse(eid, success=True, agent_id="stranger")
+    assert r["counted"] is False and r["tier"] == "agent"
+    assert "no unreported injection" in r["reason"]
+
+
+def test_one_injection_one_counted_report(svc, run_id):
+    """Exploit: one agent reporting success over and over to self-promote a peer's memory."""
+    eid = svc.store_experience(_create(run_id))["id"]
+    _inject(svc, run_id, "peer")
+    results = [svc.record_reuse(eid, success=True, agent_id="peer") for _ in range(10)]
+    assert [r["counted"] for r in results] == [True] + [False] * 9
+    assert results[-1]["reuse_count"] == 1 and results[-1]["tier"] == "shared"
+
+
+def test_each_injection_earns_one_report(svc, run_id):
+    eid = svc.store_experience(_create(run_id))["id"]
+    for _ in range(3):
+        _inject(svc, run_id, "peer")
+    counted = [svc.record_reuse(eid, success=True, agent_id="peer")["counted"] for _ in range(4)]
+    assert counted == [True, True, True, False]
+
+
+def test_author_negative_self_report_counts_once(svc, run_id):
+    eid = svc.store_experience(_create(run_id))["id"]
+    a = svc.record_reuse(eid, success=False, agent_id="author")
+    b = svc.record_reuse(eid, success=False, agent_id="author")
+    assert a["counted"] is True and b["counted"] is False
+    assert b["reuse_count"] == 1
 
 
 def test_reuse_requires_reporter(svc, run_id):

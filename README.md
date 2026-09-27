@@ -72,13 +72,27 @@ A caller with no identity sees only `SHARED` and above. Knowledge therefore spre
 
 After using injected memories, an agent reports whether its task actually succeeded (`reuse_memory` / `POST /experiences/{id}/reuse`). An author can also report that its *own* memory turned out wrong.
 
+- **Reports count only against a real injection.** A report counts if `get_memory_context` actually put that memory in front of the reporting agent, and each injection earns at most one counted report. Reporting on a memory you were never shown, or reporting ten times, earns nothing.
 - **Positive self-reports are ignored.** An agent cannot vouch for its own memory.
-- **Negative self-reports count.** "My solution failed CI" is exactly the evidence needed.
+- **Negative self-reports count, once.** "My solution failed CI" is exactly the evidence needed.
 - **Confidence is updated on every counted report** as a Beta-posterior mean, `(successes + 2·0.6) / (reports + 2)`. Memories below `min_confidence = 0.45` are not injected. One failed report takes a new memory from 0.60 to 0.40.
 - **Quarantine.** When a memory has ≥ 3 reports at < 40 % success, it is demoted to `PRIVATE`. Quarantine is terminal for automatic governance.
 - **Everything is audited.** Every tier change goes to `tier_transitions`, and every report to `reuse_events`, with who reported it and whether it counted.
 
 In practice, **confidence gating does most of the work**: a bad memory usually stops being injected after one failed report, long before it has the three reports needed for formal quarantine.
+
+---
+
+### Identity
+
+Every agent is registered with a fixed role and gets an API key; only a SHA-256 hash of the key is stored.
+
+- **The REST API takes `agent_id` and role from the key.** A request naming a different agent gets `403`. So an agent cannot read another agent's `PRIVATE` memories, or report outcomes under a second identity to get around the self-report rule.
+- **Only an admin can register agents** (`ACTIONCLOUD_ADMIN_KEY` or the CLI), so identities can't be minted at will.
+- **The MCP server acts as the agent owning `ACTIONCLOUD_API_KEY`.** It holds database credentials itself, so for MCP this keeps honest clients to one identity; the REST API is the actual security boundary.
+- **The in-process experiment client is trusted** and not authenticated.
+
+`tests/test_auth.py` runs each of the old attacks against the live API.
 
 ---
 
@@ -154,8 +168,9 @@ Caveat: tasks in the same family share technology tags, which helps a lexical em
 ```bash
 make setup                 # venv + deps, copies .env.example -> .env
 make up                    # Postgres 16 + pgvector (port 5433) and LocalStack SQS
-make migrate               # only for a volume created before sql/002 existed
-make test                  # 85 tests (DB-backed ones skip if Postgres is down)
+make migrate               # only for a volume created before sql/003 existed
+make test                  # 101 tests (DB-backed ones skip if Postgres is down)
+make agent ID=cursor-1 ROLE=coding   # register an agent; prints its API key once
 
 make experiment            # all evaluation presets, 5 seeds -> results/
 make fleet                 # 12-role fleet simulation
@@ -184,7 +199,8 @@ Or skip the worker and LocalStack entirely with `SYNC_WRITE=true`: writes go thr
       "env": {
         "PYTHONPATH": "/path/to/actioncloud/src",
         "DATABASE_URL": "postgresql://actioncloud:actioncloud@localhost:5433/actioncloud",
-        "SYNC_WRITE": "true"
+        "SYNC_WRITE": "true",
+        "ACTIONCLOUD_API_KEY": "ac_... (from make agent)"
       }
     }
   }
@@ -199,9 +215,15 @@ Or skip the worker and LocalStack entirely with `SYNC_WRITE=true`: writes go thr
 | `reuse_memory` | `experience_id`, `success`, `agent_id` | Report whether a memory helped; drives governance |
 | `get_memory_metrics` | `run_id` | Aggregate metrics |
 
+With `ACTIONCLOUD_API_KEY` set, `agent_id` and `agent_role` come from the key and can be omitted; naming a different agent is an error.
+
+Reuse credit requires that the memory came from `get_memory_context`; memories found through `search_memory` alone earn no credit.
+
 Older argument names (`query`, `role`, `max_memories`, `action`) and tool names (`search_fleet_memory`, `store_experience`, `report_memory_reuse`, `get_fleet_metrics`) are still accepted. Errors are returned as `isError` results without internal details.
 
 ## REST API
+
+Every endpoint except `/health` requires an agent key: `X-API-Key: ac_...` (or `Authorization: Bearer ac_...`). `agent_id` and role come from the key, so they can be left out of request bodies.
 
 | Endpoint | Method | Description |
 | :--- | :--- | :--- |
@@ -209,8 +231,10 @@ Older argument names (`query`, `role`, `max_memories`, `action`) and tool names 
 | `/experiences` | POST | Store an experience (`202` when queued) |
 | `/search` | GET | Governed hybrid search (`q`, `agent_id`, `agent_role`, `technologies`, `scope_run_id`, `min_tier`, `limit`) |
 | `/context` | POST | Compact, governed context block for a task |
-| `/experiences/{id}/reuse` | POST | Outcome report `{success, agent_id}`. `agent_id` is required. |
-| `/experiences/{id}` | GET | Full record |
+| `/experiences/{id}/reuse` | POST | Outcome report `{success}`. Counted only against a prior injection to this agent. |
+| `/experiences/{id}` | GET | Full record, if visible to this agent (otherwise `404`) |
+| `/agents` | POST | Admin: register an agent `{agent_id, agent_role}`; returns its key once |
+| `/agents/{id}` | DELETE | Admin: revoke an agent's key |
 | `/metrics` | GET | Metrics computed from stored experiences. Note: stored `success` is each agent's self-assessment, so it runs higher than verified success. |
 
 ---
@@ -223,6 +247,7 @@ See `.env.example`. The main settings:
 - `LLM_PROVIDER`: `sim`, `mock`, `anthropic`, `gemini` or `groq`.
 - `SYNC_WRITE`: process writes in-request instead of through the queue.
 - `DATABASE_URL`: a full connection URL, overriding the `DB_*` fields.
+- `AUTH_REQUIRED` (default `true`), `ACTIONCLOUD_ADMIN_KEY`, `ACTIONCLOUD_API_KEY`: see *Identity*.
 - Retrieval policy: the `MEMORY_*` variables.
 
 ## Known limitations
@@ -231,4 +256,5 @@ See `.env.example`. The main settings:
 - **Lexical default embedder.** Semantic providers are wired in but were not evaluated here, because no API keys or network were available.
 - **Brute-force hybrid scoring.** The query scores every visible row, which is fine at thousands of experiences. At larger scale, restrict candidates via the HNSW index first.
 - **Almost no cross-role knowledge transfer is exercised**, because the benchmark's task families are role-specific.
+- **No rate limiting or key expiry.** A leaked key works until an admin revokes it.
 - **No `LICENSE` file is included yet.**

@@ -48,15 +48,25 @@ def check(label: str, ok: bool, detail: str = "") -> bool:
     return ok
 
 
+
+def client_for(agent_id: str, role: AgentRole) -> ActionCloudClient:
+    """
+    Register (or re-key) a verification agent and return a client holding
+    its API key. The API derives identity from the key, so every agent needs
+    its own client — one shared client can no longer act for several agents.
+    Uses the database directly, like the rest of this dev script.
+    """
+    from actioncloud.auth import register_agent  # noqa: PLC0415
+    key = register_agent(agent_id, role, rotate=True)
+    return ActionCloudClient(agent_id=agent_id, agent_role=role, base_url=BASE_URL, api_key=key)
+
 def main() -> int:
     run_id = f"verify-{uuid.uuid4().hex[:8]}"
     print(f"\nActionCloud Phase 1 verification  (run_id={run_id})\n")
 
     # -- 1. Dependencies ---------------------------------------------------
     print("1. Health")
-    client = ActionCloudClient(
-        agent_id="verify-agent", agent_role=AgentRole.CODING, base_url=BASE_URL
-    )
+    client = client_for("coding-verify", AgentRole.CODING)
     try:
         health = client.health()
     except Exception as e:  # noqa: BLE001
@@ -136,15 +146,16 @@ def main() -> int:
     print("\n5. Memory-enabled arm")
     # AGENT-tier memories are visible to agents of the SAME role; other roles
     # only see them once promoted to SHARED by successful reuse.
-    other_role = client.search(query="Neo4j bolt connection Docker", limit=5,
-                               agent_id="research-verify", agent_role=AgentRole.RESEARCH)
+    researcher = client_for("research-verify", AgentRole.RESEARCH)
+    other_role = researcher.search(query="Neo4j bolt connection Docker", limit=5)
+    researcher.close()
     check("other-role agent cannot see an unpromoted AGENT-tier memory",
           not any(r.id == outcome.experience_id for r in other_role))
 
     agent_b = build_agent(
         AgentRole.CODING,
         agent_id="coding-verify-b",
-        client=client,
+        client=(client_b := client_for("coding-verify-b", AgentRole.CODING)),
         run_id=run_id,
         use_memory=True,           # actioncloud arm
         llm=MockLLM(simulated_latency_ms=0),

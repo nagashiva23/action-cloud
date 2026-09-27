@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import sys
 import uuid
 from typing import Any, Dict, List, Optional, Tuple
@@ -26,7 +27,7 @@ logging.basicConfig(level=logging.ERROR, stream=sys.stderr)
 log = logging.getLogger(__name__)
 
 PROTOCOL_VERSION = "2024-11-05"
-SERVER_INFO = {"name": "actioncloud", "version": "0.4.0"}
+SERVER_INFO = {"name": "actioncloud", "version": "0.5.0"}
 
 ROLE_ENUM = [r.value for r in AgentRole]
 TIER_ENUM = [t.value for t in MemoryTier]
@@ -71,10 +72,40 @@ def _role(args: Dict[str, Any], default: Optional[str] = None) -> Optional[Agent
 
 
 class ActionCloudMCPServer:
-    """MCP tools backed directly by MemoryService (no HTTP hop)."""
+    """
+    MCP tools backed directly by MemoryService (no HTTP hop).
 
-    def __init__(self, service=memory_service) -> None:
+    Identity: if ACTIONCLOUD_API_KEY is set, the server resolves it once and
+    acts as that agent for every call — agent_id/agent_role arguments naming
+    anyone else are rejected. Without a key, identity comes from the tool
+    arguments (development only; this server holds database credentials, so
+    the REST API, not this process, is the security boundary).
+    """
+
+    def __init__(self, service=memory_service, api_key: Optional[str] = None) -> None:
         self.service = service
+        self.principal = None
+        key = api_key if api_key is not None else os.environ.get("ACTIONCLOUD_API_KEY")
+        if key:
+            from .auth import resolve_key  # noqa: PLC0415
+            self.principal = resolve_key(key)
+            if self.principal is None:
+                raise SystemExit("ACTIONCLOUD_API_KEY is unknown or revoked")
+
+    def _bind(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        """Force (or check) agent_id/agent_role against the bound key."""
+        if self.principal is None:
+            return args
+        claimed_id = args.get("agent_id")
+        claimed_role = _arg(args, "agent_role")
+        if claimed_id and claimed_id != self.principal.agent_id:
+            raise ToolError(f"this server is bound to agent {self.principal.agent_id!r}")
+        if claimed_role and claimed_role != self.principal.role.value:
+            raise ToolError(f"agent {self.principal.agent_id!r} has role {self.principal.role.value!r}")
+        bound = {k: v for k, v in args.items() if k not in ("role",)}
+        bound["agent_id"] = self.principal.agent_id
+        bound["agent_role"] = self.principal.role.value
+        return bound
 
     # -- manifest ------------------------------------------------------------
 
@@ -132,7 +163,7 @@ class ActionCloudMCPServer:
                         "solution": {"type": "string"},
                         "technologies": {"type": "array", "items": {"type": "string"}},
                     },
-                    "required": ["task", "action_taken", "result", "success", "agent_id"],
+                    "required": ["task", "action_taken", "result", "success"],
                 },
             },
             {
@@ -148,7 +179,7 @@ class ActionCloudMCPServer:
                         "success": {"type": "boolean"},
                         "agent_id": {"type": "string"},
                     },
-                    "required": ["experience_id", "success", "agent_id"],
+                    "required": ["experience_id", "success"],
                 },
             },
             {
@@ -164,6 +195,7 @@ class ActionCloudMCPServer:
         """Run a tool. Returns (text, is_error)."""
         name = TOOL_ALIASES.get(name, name)
         try:
+            args = self._bind(args)
             if name == "get_memory_context":
                 pol = MemorySelectionPolicy.from_env()
                 pol.max_context_memories = int(_arg(args, "k_inject", pol.max_context_memories))
