@@ -182,3 +182,42 @@ def test_metrics_endpoint_shape(svc, run_id):
     m = MetricCalculator.calculate_run_metrics(run_id)
     assert m["systems"]["actioncloud"]["total_tasks"] == 1
     assert "agent" in m["governance_tier_distribution"]
+
+
+def test_author_prior_off_by_default(svc, run_id):
+    eid = svc.store_experience(_create(run_id, agent_id=f"a-{uuid.uuid4().hex[:6]}"))["id"]
+    row = svc.get_experience(eid)
+    assert row["prior"] == pytest.approx(0.6) and row["confidence"] == pytest.approx(0.6)
+
+
+def test_author_prior_tracks_the_authors_record(run_id):
+    """An author whose memories keep failing starts new memories below the injection floor."""
+    svc = MemoryService(sync_write=True, author_prior=True)
+    author = f"shaky-{uuid.uuid4().hex[:6]}"
+    for i in range(3):
+        eid = svc.store_experience(_create(run_id, agent_id=author, task_key=f"k{i}"))["id"]
+        svc.record_reuse(eid, success=False, agent_id=author)       # counted once each
+    fresh = svc.get_experience(svc.store_experience(_create(run_id, agent_id=author))["id"])
+    assert fresh["prior"] == pytest.approx((0 + 1.2) / (3 + 2))     # 0.24
+    assert fresh["confidence"] < MemorySelectionPolicy().min_confidence
+    newcomer = svc.get_experience(svc.store_experience(_create(run_id, agent_id=f"new-{uuid.uuid4().hex[:6]}"))["id"])
+    assert newcomer["prior"] == pytest.approx(0.6)                  # no record -> global prior
+
+
+def test_confidence_posterior_uses_the_memory_prior(run_id):
+    svc = MemoryService(sync_write=True, author_prior=True)
+    author = f"good-{uuid.uuid4().hex[:6]}"
+    eid = svc.store_experience(_create(run_id, agent_id=author))["id"]
+    _inject(svc, run_id, "peer")
+    r = svc.record_reuse(eid, success=True, agent_id="peer")
+    assert r["confidence"] == pytest.approx((1 + 2 * 0.6) / 3, abs=1e-3)
+
+
+def test_ann_mode_matches_exact_on_small_store(svc, run_id):
+    eid = svc.store_experience(_create(run_id))["id"]
+    svc.store_experience(_create(run_id, task="Bake sourdough bread", technologies=["oven"], task_key="bread"))
+    for ann in (0, 50):
+        res = svc.prepare_context("Configure pgvector HNSW index for cosine search", agent_id="peer",
+                                  role=AgentRole.CODING, technologies=["postgres", "pgvector"],
+                                  scope_run_id=run_id, policy=MemorySelectionPolicy(ann_candidates=ann))
+        assert res["injected_experience_ids"] == [str(eid)]

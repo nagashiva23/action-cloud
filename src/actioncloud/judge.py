@@ -85,6 +85,11 @@ class MemoryJudge:
         return tier, confidence, f"Initial creation: assigned {tier.value} tier"
 
     @staticmethod
+    def author_reputation(successes: int, reports: int) -> float:
+        """Beta-posterior reputation of an author over all its memories' counted reports."""
+        return round((successes + PRIOR_WEIGHT * DEFAULT_PRIOR) / (reports + PRIOR_WEIGHT), 4)
+
+    @staticmethod
     def posterior_confidence(successes: int, reuses: int, prior: float = DEFAULT_PRIOR) -> float:
         return round((successes + PRIOR_WEIGHT * prior) / (reuses + PRIOR_WEIGHT), 4)
 

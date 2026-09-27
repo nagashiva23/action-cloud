@@ -42,10 +42,17 @@ class MemoryService:
     that gives neither sees only SHARED-and-above memories.
     """
 
-    def __init__(self, sync_write: bool | None = None, governance: bool = True) -> None:
+    def __init__(self, sync_write: bool | None = None, governance: bool = True,
+                 author_prior: bool | None = None) -> None:
         self.sync_write = settings.sync_write if sync_write is None else sync_write
         # False only for the flat-memory ablation arm (see pipeline.py).
         self.governance = governance
+        # Seed new memories' confidence from their author's reputation.
+        import os  # noqa: PLC0415
+        self.author_prior = (
+            os.environ.get("MEMORY_AUTHOR_PRIOR", "false").strip().lower() in {"1", "true", "yes"}
+            if author_prior is None else author_prior
+        )
 
     # --- Writes -----------------------------------------------------------
 
@@ -54,7 +61,7 @@ class MemoryService:
         exp = Experience(**payload.model_dump())
 
         if self.sync_write:
-            process_experience(exp, governance=self.governance)
+            process_experience(exp, governance=self.governance, author_prior=self.author_prior)
             return {"id": exp.id, "queued": False, "message": "processed synchronously"}
 
         try:
@@ -140,6 +147,7 @@ class MemoryService:
             agent_id=agent_id,
             agent_role=_role_value(role),
             scope_run_id=scope_run_id,
+            ann_candidates=pol.ann_candidates,
         )
         context_str, injected_ids, candidate_count, final_count = (
             CompactContextBuilder.build_context(candidates, pol)

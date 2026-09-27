@@ -1,0 +1,297 @@
+[
+ {
+  "adversary_rate": 0.0,
+  "baseline": {
+   "success_rate_pct": {
+    "mean": 64.46,
+    "sd": 2.34
+   },
+   "poisoned_injection_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   },
+   "misled_rate_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   }
+  },
+  "flat_memory": {
+   "success_rate_pct": {
+    "mean": 72.55,
+    "sd": 3.85
+   },
+   "poisoned_injection_pct": {
+    "mean": 30.45,
+    "sd": 4.76
+   },
+   "misled_rate_pct": {
+    "mean": 25.55,
+    "sd": 3.7
+   }
+  },
+  "actioncloud": {
+   "success_rate_pct": {
+    "mean": 85.95,
+    "sd": 0.62
+   },
+   "poisoned_injection_pct": {
+    "mean": 4.99,
+    "sd": 1.23
+   },
+   "misled_rate_pct": {
+    "mean": 7.96,
+    "sd": 0.08
+   }
+  },
+  "actioncloud_author": {
+   "success_rate_pct": {
+    "mean": 84.39,
+    "sd": 1.11
+   },
+   "poisoned_injection_pct": {
+    "mean": 6.03,
+    "sd": 1.66
+   },
+   "misled_rate_pct": {
+    "mean": 8.8,
+    "sd": 1.01
+   }
+  }
+ },
+ {
+  "adversary_rate": 0.1,
+  "baseline": {
+   "success_rate_pct": {
+    "mean": 63.67,
+    "sd": 2.12
+   },
+   "poisoned_injection_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   },
+   "misled_rate_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   }
+  },
+  "flat_memory": {
+   "success_rate_pct": {
+    "mean": 65.67,
+    "sd": 4.19
+   },
+   "poisoned_injection_pct": {
+    "mean": 41.21,
+    "sd": 4.46
+   },
+   "misled_rate_pct": {
+    "mean": 33.31,
+    "sd": 4.03
+   }
+  },
+  "actioncloud": {
+   "success_rate_pct": {
+    "mean": 79.02,
+    "sd": 1.09
+   },
+   "poisoned_injection_pct": {
+    "mean": 14.47,
+    "sd": 0.43
+   },
+   "misled_rate_pct": {
+    "mean": 15.96,
+    "sd": 1.15
+   }
+  },
+  "actioncloud_author": {
+   "success_rate_pct": {
+    "mean": 79.47,
+    "sd": 2.01
+   },
+   "poisoned_injection_pct": {
+    "mean": 12.55,
+    "sd": 0.71
+   },
+   "misled_rate_pct": {
+    "mean": 14.37,
+    "sd": 1.37
+   }
+  }
+ },
+ {
+  "adversary_rate": 0.2,
+  "baseline": {
+   "success_rate_pct": {
+    "mean": 63.29,
+    "sd": 1.85
+   },
+   "poisoned_injection_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   },
+   "misled_rate_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   }
+  },
+  "flat_memory": {
+   "success_rate_pct": {
+    "mean": 58.38,
+    "sd": 3.91
+   },
+   "poisoned_injection_pct": {
+    "mean": 51.32,
+    "sd": 3.83
+   },
+   "misled_rate_pct": {
+    "mean": 41.39,
+    "sd": 3.61
+   }
+  },
+  "actioncloud": {
+   "success_rate_pct": {
+    "mean": 71.17,
+    "sd": 1.86
+   },
+   "poisoned_injection_pct": {
+    "mean": 25.42,
+    "sd": 2.27
+   },
+   "misled_rate_pct": {
+    "mean": 25.16,
+    "sd": 2.05
+   }
+  },
+  "actioncloud_author": {
+   "success_rate_pct": {
+    "mean": 71.88,
+    "sd": 2.04
+   },
+   "poisoned_injection_pct": {
+    "mean": 23.14,
+    "sd": 2.3
+   },
+   "misled_rate_pct": {
+    "mean": 23.41,
+    "sd": 2.59
+   }
+  }
+ },
+ {
+  "adversary_rate": 0.3,
+  "baseline": {
+   "success_rate_pct": {
+    "mean": 63.51,
+    "sd": 3.22
+   },
+   "poisoned_injection_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   },
+   "misled_rate_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   }
+  },
+  "flat_memory": {
+   "success_rate_pct": {
+    "mean": 50.99,
+    "sd": 4.25
+   },
+   "poisoned_injection_pct": {
+    "mean": 61.46,
+    "sd": 5.33
+   },
+   "misled_rate_pct": {
+    "mean": 49.7,
+    "sd": 4.11
+   }
+  },
+  "actioncloud": {
+   "success_rate_pct": {
+    "mean": 62.69,
+    "sd": 2.14
+   },
+   "poisoned_injection_pct": {
+    "mean": 37.67,
+    "sd": 1.49
+   },
+   "misled_rate_pct": {
+    "mean": 36.3,
+    "sd": 2.28
+   }
+  },
+  "actioncloud_author": {
+   "success_rate_pct": {
+    "mean": 64.21,
+    "sd": 2.46
+   },
+   "poisoned_injection_pct": {
+    "mean": 35.36,
+    "sd": 2.05
+   },
+   "misled_rate_pct": {
+    "mean": 34.25,
+    "sd": 2.7
+   }
+  }
+ },
+ {
+  "adversary_rate": 0.4,
+  "baseline": {
+   "success_rate_pct": {
+    "mean": 63.39,
+    "sd": 3.89
+   },
+   "poisoned_injection_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   },
+   "misled_rate_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   }
+  },
+  "flat_memory": {
+   "success_rate_pct": {
+    "mean": 45.63,
+    "sd": 5.54
+   },
+   "poisoned_injection_pct": {
+    "mean": 67.45,
+    "sd": 6.88
+   },
+   "misled_rate_pct": {
+    "mean": 56.05,
+    "sd": 5.58
+   }
+  },
+  "actioncloud": {
+   "success_rate_pct": {
+    "mean": 53.83,
+    "sd": 2.37
+   },
+   "poisoned_injection_pct": {
+    "mean": 50.54,
+    "sd": 2.07
+   },
+   "misled_rate_pct": {
+    "mean": 47.94,
+    "sd": 2.88
+   }
+  },
+  "actioncloud_author": {
+   "success_rate_pct": {
+    "mean": 56.29,
+    "sd": 1.85
+   },
+   "poisoned_injection_pct": {
+    "mean": 46.69,
+    "sd": 0.73
+   },
+   "misled_rate_pct": {
+    "mean": 44.91,
+    "sd": 1.66
+   }
+  }
+ }
+]

@@ -1,0 +1,265 @@
+{
+ "summary": {
+  "baseline": {
+   "success_rate_pct": {
+    "mean": 64.952,
+    "sd": 2.874
+   },
+   "retrieval_precision_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   },
+   "misled_rate_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   },
+   "poisoned_injection_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   },
+   "redundancy_index": {
+    "mean": 1.0,
+    "sd": 0.0
+   },
+   "avg_tokens_per_task": {
+    "mean": 928.48,
+    "sd": 4.294
+   },
+   "avg_context_tokens": {
+    "mean": 0,
+    "sd": 0.0
+   },
+   "cost_per_success_usd": {
+    "mean": 0.02,
+    "sd": 0.001
+   },
+   "injection_rate_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   }
+  },
+  "flat_memory": {
+   "success_rate_pct": {
+    "mean": 75.442,
+    "sd": 4.937
+   },
+   "retrieval_precision_pct": {
+    "mean": 95.22,
+    "sd": 0.323
+   },
+   "misled_rate_pct": {
+    "mean": 22.472,
+    "sd": 5.071
+   },
+   "poisoned_injection_pct": {
+    "mean": 27.662,
+    "sd": 5.293
+   },
+   "redundancy_index": {
+    "mean": 0.017,
+    "sd": 0.006
+   },
+   "avg_tokens_per_task": {
+    "mean": 607.84,
+    "sd": 14.043
+   },
+   "avg_context_tokens": {
+    "mean": 111.94,
+    "sd": 1.337
+   },
+   "cost_per_success_usd": {
+    "mean": 0.009,
+    "sd": 0.001
+   },
+   "injection_rate_pct": {
+    "mean": 91.226,
+    "sd": 0.586
+   }
+  },
+  "actioncloud": {
+   "success_rate_pct": {
+    "mean": 86.764,
+    "sd": 1.068
+   },
+   "retrieval_precision_pct": {
+    "mean": 95.022,
+    "sd": 1.055
+   },
+   "misled_rate_pct": {
+    "mean": 7.086,
+    "sd": 1.23
+   },
+   "poisoned_injection_pct": {
+    "mean": 4.398,
+    "sd": 1.048
+   },
+   "redundancy_index": {
+    "mean": 0.029,
+    "sd": 0.006
+   },
+   "avg_tokens_per_task": {
+    "mean": 590.98,
+    "sd": 5.122
+   },
+   "avg_context_tokens": {
+    "mean": 106.56,
+    "sd": 2.002
+   },
+   "cost_per_success_usd": {
+    "mean": 0.008,
+    "sd": 0.0
+   },
+   "injection_rate_pct": {
+    "mean": 84.412,
+    "sd": 1.564
+   }
+  }
+ },
+ "tests": {
+  "actioncloud_vs_baseline": {
+   "n": 2040,
+   "a_only": 523,
+   "b_only": 78,
+   "p": 7.588862166015404e-82
+  },
+  "actioncloud_vs_flat_memory": {
+   "n": 2040,
+   "a_only": 252,
+   "b_only": 21,
+   "p": 1.8433221776455786e-51
+  },
+  "flat_memory_vs_baseline": {
+   "n": 2040,
+   "a_only": 439,
+   "b_only": 225,
+   "p": 7.518752962462853e-17
+  }
+ },
+ "token_savings_pct": {
+  "mean": 36.0,
+  "ci95": [
+   35.11,
+   36.91
+  ]
+ },
+ "learning_curve": {
+  "baseline": {
+   "0": 64.41,
+   "1": 66.18,
+   "2": 64.26
+  },
+  "flat_memory": {
+   "0": 70.59,
+   "1": 77.79,
+   "2": 77.94
+  },
+  "actioncloud": {
+   "0": 75.74,
+   "1": 91.32,
+   "2": 93.24
+  }
+ },
+ "by_role": {
+  "baseline": {
+   "cloud": 64.44,
+   "coding": 66.0,
+   "data_analysis": 67.78,
+   "database": 64.44,
+   "deployment": 64.67,
+   "devops": 61.78,
+   "documentation": 62.22,
+   "ml": 62.22,
+   "monitoring": 67.78,
+   "research": 63.56,
+   "security": 63.56,
+   "testing": 69.33
+  },
+  "actioncloud": {
+   "cloud": 95.56,
+   "coding": 82.22,
+   "data_analysis": 85.56,
+   "database": 88.89,
+   "deployment": 94.67,
+   "devops": 92.89,
+   "documentation": 87.78,
+   "ml": 83.33,
+   "monitoring": 83.33,
+   "research": 81.78,
+   "security": 85.33,
+   "testing": 89.33
+  }
+ },
+ "tiers": {
+  "baseline": [
+   {
+    "private": 58,
+    "agent": 350
+   },
+   {
+    "private": 53,
+    "agent": 355
+   },
+   {
+    "private": 70,
+    "agent": 338
+   },
+   {
+    "private": 39,
+    "agent": 369
+   },
+   {
+    "private": 65,
+    "agent": 343
+   }
+  ],
+  "flat_memory": [
+   {
+    "shared": 408
+   },
+   {
+    "shared": 408
+   },
+   {
+    "shared": 408
+   },
+   {
+    "shared": 408
+   },
+   {
+    "shared": 408
+   }
+  ],
+  "actioncloud": [
+   {
+    "private": 16,
+    "agent": 299,
+    "shared": 83,
+    "validated": 10
+   },
+   {
+    "private": 11,
+    "agent": 296,
+    "shared": 91,
+    "validated": 10
+   },
+   {
+    "private": 16,
+    "agent": 291,
+    "shared": 90,
+    "validated": 11
+   },
+   {
+    "private": 15,
+    "agent": 291,
+    "shared": 92,
+    "validated": 10
+   },
+   {
+    "private": 19,
+    "agent": 295,
+    "shared": 80,
+    "validated": 14
+   }
+  ]
+ }
+}

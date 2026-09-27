@@ -62,14 +62,14 @@ INSERT INTO experiences (
     tools_used, technologies, success,
     tokens_input, tokens_output, tool_calls, execution_time_ms, cost_usd,
     run_id, system, task_key, retrieved_experience_ids,
-    tier, confidence
+    tier, confidence, prior
 ) VALUES (
     %(id)s, %(schema_version)s, %(agent_id)s, %(agent_role)s,
     %(task)s, %(problem)s, %(action)s, %(solution)s, %(result)s,
     %(tools_used)s, %(technologies)s, %(success)s,
     %(tokens_input)s, %(tokens_output)s, %(tool_calls)s, %(execution_time_ms)s, %(cost_usd)s,
     %(run_id)s, %(system)s, %(task_key)s, %(retrieved_experience_ids)s,
-    %(tier)s, %(confidence)s
+    %(tier)s, %(confidence)s, %(prior)s
 )
 -- The queue guarantees at-least-once delivery, so the same event can legitimately
 -- arrive twice. Making the insert idempotent on the primary key is what turns
@@ -104,6 +104,7 @@ def _insert_params(exp: Experience) -> dict[str, Any]:
         "retrieved_experience_ids": [str(i) for i in exp.retrieved_experience_ids],
         "tier": exp.tier.value,
         "confidence": exp.confidence,
+        "prior": exp.prior,
     }
 
 
@@ -167,6 +168,18 @@ def insert_enriched_experience(
     return True
 
 
+def author_evidence(agent_id: str) -> tuple[int, int]:
+    """(counted successes, counted reports) over every memory this agent wrote."""
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT coalesce(sum(reuse_success_count), 0) AS s, coalesce(sum(reuse_count), 0) AS n "
+            "FROM experiences WHERE agent_id = %s",
+            (agent_id,),
+        )
+        row = cur.fetchone()
+    return int(row["s"]), int(row["n"])
+
+
 def record_injections(experience_ids: list[uuid.UUID | str], agent_id: str) -> None:
     """Ledger entry: these memories were put in front of this agent."""
     if not experience_ids:
@@ -226,7 +239,7 @@ def apply_reuse(
     reporter_agent_id: str,
     decide: Callable[[MemoryTier, float, int, int], Optional[tuple]],
     decided_by: str,
-    confidence_fn: Optional[Callable[[int, int], float]] = None,
+    confidence_fn: Optional[Callable[[int, int, float], float]] = None,
 ) -> Optional[dict[str, Any]]:
     """
     Record one reuse outcome and apply the Judge's decision atomically.
@@ -269,7 +282,8 @@ def apply_reuse(
 
             transition = None
             if counted and confidence_fn is not None:
-                conf = confidence_fn(int(row["reuse_success_count"]), int(row["reuse_count"]))
+                conf = confidence_fn(int(row["reuse_success_count"]), int(row["reuse_count"]),
+                                     float(row.get("prior", 0.6)))
                 cur.execute(
                     "UPDATE experiences SET confidence = %s WHERE id = %s",
                     (conf, experience_id),
@@ -507,6 +521,31 @@ LIMIT %(limit)s;
 """
 
 
+# Index-backed variant for large stores. The HNSW index returns the ann_k
+# nearest memories by cosine; visibility, scope and the keyword bonus are then
+# applied to those candidates only. pgvector < 0.8 filters after the index
+# scan, so ann_k must comfortably exceed the number of memories a caller
+# cannot see among the true neighbours.
+HYBRID_ANN_SQL = f"""
+WITH nn AS (
+    SELECT id FROM experiences
+    WHERE embedding IS NOT NULL
+    ORDER BY embedding <=> %(vector)s::vector
+    LIMIT %(ann_k)s
+), scored AS (
+    SELECT e.*,
+           (1 - (e.embedding <=> %(vector)s::vector))::float8 AS vec_score,
+           ts_rank({_DOC}, plainto_tsquery('english', %(query)s), 32)::float8 AS fts_score
+    FROM experiences e JOIN nn ON nn.id = e.id
+    WHERE {_COMMON_FILTERS}
+)
+SELECT *, (vec_score + {FTS_WEIGHT} * fts_score) AS relevance
+FROM scored
+ORDER BY relevance DESC, created_at DESC
+LIMIT %(limit)s;
+"""
+
+
 def _params(query, limit, min_tier, agent_id, agent_role, scope_run_id, vector=None):
     return {
         "query": query,
@@ -549,16 +588,27 @@ def hybrid_search_experiences(
     agent_id: str | None = None,
     agent_role: Any = None,
     scope_run_id: str | None = None,
+    ann_candidates: int = 0,
 ) -> list[dict[str, Any]]:
-    """Hybrid vector + keyword retrieval under the visibility rules above."""
+    """
+    Hybrid vector + keyword retrieval under the visibility rules above.
+
+    ann_candidates = 0 scores every visible row exactly (default). A positive
+    value uses the HNSW index to pre-select that many nearest neighbours.
+    """
     if not query_vector:
         return search_experiences(query, limit, min_tier, agent_id, agent_role, scope_run_id)
+    params = _params(query, limit, min_tier, agent_id, agent_role, scope_run_id, query_vector)
     with get_conn() as conn, conn.cursor() as cur:
-        cur.execute(
-            HYBRID_SEARCH_SQL,
-            _params(query, limit, min_tier, agent_id, agent_role, scope_run_id, query_vector),
-        )
-        return _strip(cur.fetchall())
+        if ann_candidates > 0:
+            params["ann_k"] = ann_candidates
+            cur.execute(f"SET LOCAL hnsw.ef_search = {min(1000, max(40, int(ann_candidates)))}")
+            cur.execute(HYBRID_ANN_SQL, params)
+        else:
+            cur.execute(HYBRID_SEARCH_SQL, params)
+        rows = cur.fetchall()
+        conn.commit()
+        return _strip(rows)
 
 
 def count_experiences(run_id: str | None = None) -> int:

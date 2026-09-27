@@ -1,0 +1,46 @@
+{
+ "memory_only": {
+  "success_rate_pct": {
+   "mean": 86.76,
+   "sd": 1.07
+  },
+  "poisoned_injection_pct": {
+   "mean": 4.4,
+   "sd": 1.05
+  },
+  "retrieval_precision_pct": {
+   "mean": 95.02,
+   "sd": 1.06
+  },
+  "injection_rate_pct": {
+   "mean": 84.41,
+   "sd": 1.56
+  },
+  "avg_tokens_per_task": {
+   "mean": 590.98,
+   "sd": 5.12
+  }
+ },
+ "author": {
+  "success_rate_pct": {
+   "mean": 83.38,
+   "sd": 2.76
+  },
+  "poisoned_injection_pct": {
+   "mean": 6.63,
+   "sd": 1.95
+  },
+  "retrieval_precision_pct": {
+   "mean": 91.9,
+   "sd": 2.62
+  },
+  "injection_rate_pct": {
+   "mean": 79.07,
+   "sd": 2.66
+  },
+  "avg_tokens_per_task": {
+   "mean": 628.26,
+   "sd": 20.89
+  }
+ }
+}

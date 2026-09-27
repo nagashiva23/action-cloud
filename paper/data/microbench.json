@@ -1,0 +1,60 @@
+{
+ "hardware": {
+  "cpu": "Intel(R) Xeon(R) Processor @ 2.80GHz",
+  "vcpus": 2,
+  "python": "3.11.15",
+  "postgres": "16 + pgvector"
+ },
+ "embed_ms": 0.57,
+ "ingest": {
+  "p50_ms": 11.31,
+  "p95_ms": 15.95,
+  "throughput_per_s": 89.9
+ },
+ "scaling": [
+  {
+   "n": 1000,
+   "context_p50_ms": 51.29,
+   "context_p95_ms": 61.96,
+   "ann_p50_ms": 18.18,
+   "ann_p95_ms": 23.47,
+   "ann_agreement_pct": 100.0
+  },
+  {
+   "n": 5000,
+   "context_p50_ms": 241.51,
+   "context_p95_ms": 302.46,
+   "ann_p50_ms": 17.46,
+   "ann_p95_ms": 26.46,
+   "ann_agreement_pct": 100.0
+  },
+  {
+   "n": 10000,
+   "context_p50_ms": 461.1,
+   "context_p95_ms": 561.11,
+   "ann_p50_ms": 19.53,
+   "ann_p95_ms": 31.63,
+   "ann_agreement_pct": 100.0
+  },
+  {
+   "n": 25000,
+   "context_p50_ms": 684.04,
+   "context_p95_ms": 984.02,
+   "ann_p50_ms": 15.49,
+   "ann_p95_ms": 24.51,
+   "ann_agreement_pct": 100.0
+  },
+  {
+   "n": 50000,
+   "context_p50_ms": 1254.15,
+   "context_p95_ms": 1597.42,
+   "ann_p50_ms": 16.57,
+   "ann_p95_ms": 24.46,
+   "ann_agreement_pct": 100.0
+  }
+ ],
+ "report": {
+  "p50_ms": 4.6,
+  "p95_ms": 8.44
+ }
+}

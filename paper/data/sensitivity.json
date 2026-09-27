@@ -1,0 +1,201 @@
+{
+ "grid": [
+  {
+   "p_scratch_success": 0.45,
+   "p_misled": 0.5,
+   "baseline": {
+    "success_rate_pct": 44.24,
+    "poisoned_injection_pct": 0.0,
+    "avg_tokens_per_task": 928.8
+   },
+   "flat_memory": {
+    "success_rate_pct": 61.765,
+    "poisoned_injection_pct": 45.395,
+    "avg_tokens_per_task": 690.0
+   },
+   "actioncloud": {
+    "success_rate_pct": 75.49,
+    "poisoned_injection_pct": 8.77,
+    "avg_tokens_per_task": 646.2
+   }
+  },
+  {
+   "p_scratch_success": 0.45,
+   "p_misled": 0.85,
+   "baseline": {
+    "success_rate_pct": 44.24,
+    "poisoned_injection_pct": 0.0,
+    "avg_tokens_per_task": 928.8
+   },
+   "flat_memory": {
+    "success_rate_pct": 54.045,
+    "poisoned_injection_pct": 49.645,
+    "avg_tokens_per_task": 631.5
+   },
+   "actioncloud": {
+    "success_rate_pct": 74.02,
+    "poisoned_injection_pct": 9.01,
+    "avg_tokens_per_task": 633.35
+   }
+  },
+  {
+   "p_scratch_success": 0.45,
+   "p_misled": 1.0,
+   "baseline": {
+    "success_rate_pct": 44.24,
+    "poisoned_injection_pct": 0.0,
+    "avg_tokens_per_task": 928.8
+   },
+   "flat_memory": {
+    "success_rate_pct": 49.265,
+    "poisoned_injection_pct": 51.91,
+    "avg_tokens_per_task": 601.4
+   },
+   "actioncloud": {
+    "success_rate_pct": 73.895,
+    "poisoned_injection_pct": 9.01,
+    "avg_tokens_per_task": 629.2
+   }
+  },
+  {
+   "p_scratch_success": 0.65,
+   "p_misled": 0.5,
+   "baseline": {
+    "success_rate_pct": 65.69,
+    "poisoned_injection_pct": 0.0,
+    "avg_tokens_per_task": 928.8
+   },
+   "flat_memory": {
+    "success_rate_pct": 80.395,
+    "poisoned_injection_pct": 24.47,
+    "avg_tokens_per_task": 632.0
+   },
+   "actioncloud": {
+    "success_rate_pct": 86.885,
+    "poisoned_injection_pct": 4.275,
+    "avg_tokens_per_task": 596.1
+   }
+  },
+  {
+   "p_scratch_success": 0.65,
+   "p_misled": 0.85,
+   "baseline": {
+    "success_rate_pct": 65.69,
+    "poisoned_injection_pct": 0.0,
+    "avg_tokens_per_task": 928.8
+   },
+   "flat_memory": {
+    "success_rate_pct": 74.265,
+    "poisoned_injection_pct": 27.875,
+    "avg_tokens_per_task": 598.7
+   },
+   "actioncloud": {
+    "success_rate_pct": 86.15,
+    "poisoned_injection_pct": 4.125,
+    "avg_tokens_per_task": 587.9
+   }
+  },
+  {
+   "p_scratch_success": 0.65,
+   "p_misled": 1.0,
+   "baseline": {
+    "success_rate_pct": 65.69,
+    "poisoned_injection_pct": 0.0,
+    "avg_tokens_per_task": 928.8
+   },
+   "flat_memory": {
+    "success_rate_pct": 69.365,
+    "poisoned_injection_pct": 31.115,
+    "avg_tokens_per_task": 580.65
+   },
+   "actioncloud": {
+    "success_rate_pct": 85.66,
+    "poisoned_injection_pct": 4.145,
+    "avg_tokens_per_task": 587.25
+   }
+  },
+  {
+   "p_scratch_success": 0.85,
+   "p_misled": 0.5,
+   "baseline": {
+    "success_rate_pct": 84.8,
+    "poisoned_injection_pct": 0.0,
+    "avg_tokens_per_task": 928.8
+   },
+   "flat_memory": {
+    "success_rate_pct": 88.975,
+    "poisoned_injection_pct": 13.435,
+    "avg_tokens_per_task": 596.35
+   },
+   "actioncloud": {
+    "success_rate_pct": 92.28,
+    "poisoned_injection_pct": 3.465,
+    "avg_tokens_per_task": 572.0
+   }
+  },
+  {
+   "p_scratch_success": 0.85,
+   "p_misled": 0.85,
+   "baseline": {
+    "success_rate_pct": 84.8,
+    "poisoned_injection_pct": 0.0,
+    "avg_tokens_per_task": 928.8
+   },
+   "flat_memory": {
+    "success_rate_pct": 83.705,
+    "poisoned_injection_pct": 16.555,
+    "avg_tokens_per_task": 577.6
+   },
+   "actioncloud": {
+    "success_rate_pct": 91.79,
+    "poisoned_injection_pct": 3.32,
+    "avg_tokens_per_task": 567.55
+   }
+  },
+  {
+   "p_scratch_success": 0.85,
+   "p_misled": 1.0,
+   "baseline": {
+    "success_rate_pct": 84.8,
+    "poisoned_injection_pct": 0.0,
+    "avg_tokens_per_task": 928.8
+   },
+   "flat_memory": {
+    "success_rate_pct": 78.8,
+    "poisoned_injection_pct": 20.22,
+    "avg_tokens_per_task": 564.95
+   },
+   "actioncloud": {
+    "success_rate_pct": 91.055,
+    "poisoned_injection_pct": 2.905,
+    "avg_tokens_per_task": 566.2
+   }
+  }
+ ],
+ "token_gap": [
+  {
+   "gap_fraction": 1.0,
+   "baseline": 928.8,
+   "actioncloud": 587.9,
+   "savings_pct": 36.7
+  },
+  {
+   "gap_fraction": 0.75,
+   "baseline": 928.8,
+   "actioncloud": 673.1,
+   "savings_pct": 27.53
+  },
+  {
+   "gap_fraction": 0.5,
+   "baseline": 928.8,
+   "actioncloud": 761.5,
+   "savings_pct": 18.01
+  },
+  {
+   "gap_fraction": 0.33,
+   "baseline": 928.8,
+   "actioncloud": 821.2,
+   "savings_pct": 11.58
+  }
+ ]
+}

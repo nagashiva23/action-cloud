@@ -80,7 +80,7 @@ graph LR
 git clone https://github.com/nagashiva23/action-cloud.git && cd action-cloud
 make setup          # virtualenv + dependencies; creates .env from .env.example
 make up             # Postgres 16 + pgvector and LocalStack (SQS)
-make test           # 101 tests
+make test           # 105 tests
 ```
 
 **Run the API** (in-request writes, so no worker is needed):
@@ -252,6 +252,14 @@ Knowledge spreads within a role first, and across roles only after it has proven
 - **Quarantine.** At ≥ 3 reports with < 40 % success, a memory is demoted to `PRIVATE`.
 - **Audit.** Every tier change is written to `tier_transitions`, every report to `reuse_events`, and every injection to `injections`.
 
+### Author reputation (optional)
+
+With `MEMORY_AUTHOR_PRIOR=true`, a new memory's confidence starts from its author's reputation: the same Beta posterior, computed over all counted reports on that author's earlier memories. An author whose memories keep failing starts new ones below the injection floor.
+
+It is off by default, because in our evaluation it has a trade-off:
+- **Under attack it helps a little.** With colluding adversarial agents it lowers flawed injections by 2–4 points.
+- **When everyone is honest it costs about 3 points of success.** Honest authors with an unlucky start get held back.
+
 ---
 
 ## Configuration
@@ -280,6 +288,8 @@ All settings are environment variables; see [`.env.example`](.env.example).
 | `MEMORY_MIN_CONFIDENCE` | `0.45` | Confidence floor for injection |
 | `MEMORY_CONTEXT_TOKEN_BUDGET` | `1000` | Hard cap on context size |
 | `MEMORY_CANDIDATE_K` / `MEMORY_REDUNDANCY_THRESHOLD` / `MEMORY_TRUST_WEIGHT` | `10` / `0.85` / `0.10` | Candidate pool, duplicate cutoff, trust ranking bonus |
+| `MEMORY_ANN_CANDIDATES` | `0` | `0` = exact scoring of every visible memory; `N` = HNSW pre-selects `N` nearest neighbours first. Use about `200` beyond a few thousand memories |
+| `MEMORY_AUTHOR_PRIOR` | `false` | Start a new memory's confidence from its author's track record (see *Author reputation*) |
 | **Models** | | |
 | `LLM_PROVIDER` | `mock` | Extraction and benchmark agents: `sim`, `mock`, `anthropic`, `gemini`, `groq` |
 | `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` / `GROQ_API_KEY` / `OPENAI_API_KEY` | — | Provider credentials |
@@ -298,7 +308,7 @@ The local stack mirrors managed AWS services, so the same code runs in both plac
 | LocalStack SQS | Amazon SQS (add a dead-letter queue with a redrive policy) |
 | `make api` / `make worker` | Two services (e.g. ECS Fargate): `uvicorn actioncloud.api:app` and `python -m actioncloud.worker` |
 
-Apply the schema with the files in `sql/` in order (`001` → `003`). All migrations after `001` are idempotent (`make migrate` locally).
+Apply the schema with the files in `sql/` in order (`001` → `004`). All migrations after `001` are idempotent (`make migrate` locally).
 
 **Production checklist**
 
@@ -347,7 +357,7 @@ make calibrate      # retrieval threshold calibration
 ## Development
 
 ```bash
-make test       # 101 tests; database tests skip cleanly if Postgres is down
+make test       # 105 tests; database tests skip cleanly if Postgres is down
 make verify     # end-to-end check against a running API (make api)
 make mcp        # run the MCP server on stdio
 make migrate    # apply sql/002+ to an existing database
@@ -387,6 +397,7 @@ results/           The evaluation run cited above
 - **Real-LLM evaluation:** the headline results are simulated. The harness supports real providers; rate limiting and resumable runs are next.
 - **Semantic embeddings:** the default embedder is lexical. The Gemini and OpenAI providers are implemented but not yet evaluated.
 - **Cross-role transfer:** it is lightly exercised, because the benchmark's task families are mostly role-specific.
-- **Scale:** hybrid scoring currently scans all visible rows. Beyond roughly 10⁵ memories, candidates should be pre-filtered with the HNSW index.
+- **Scale:** exact scoring (the default) grows linearly with the number of visible memories, to about 240 ms at 5,000. Beyond a few thousand memories, set `MEMORY_ANN_CANDIDATES` so the HNSW index pre-selects candidates.
+- **Collusion:** governance limits but does not stop large colluding groups. In simulation, about 30 % adversarial agents bring ActionCloud down to no-memory performance.
 - **Keys:** there is no rate limiting or key expiry; a leaked key works until it is revoked.
 - **Packaging:** no Dockerfile, CI pipeline or license file yet.

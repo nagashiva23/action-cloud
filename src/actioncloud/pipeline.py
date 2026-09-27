@@ -28,7 +28,8 @@ from .schema import Experience, MemoryTier
 log = logging.getLogger(__name__)
 
 
-def process_experience(exp: Experience | dict[str, Any], governance: bool = True) -> bool:
+def process_experience(exp: Experience | dict[str, Any], governance: bool = True,
+                       author_prior: bool = False) -> bool:
     """
     Enrich and persist one experience. Returns False if it already existed.
 
@@ -41,6 +42,12 @@ def process_experience(exp: Experience | dict[str, Any], governance: bool = True
 
     if governance:
         tier, confidence, reason = MemoryJudge.assign_initial_tier(exp)
+        if author_prior and exp.success:
+            # Start from the author's track record instead of the global prior.
+            s, n = db.author_evidence(exp.agent_id)
+            exp.prior = MemoryJudge.author_reputation(s, n)
+            confidence = exp.prior
+            reason += f" (author reputation {exp.prior:.2f} over {n} reports)"
     else:
         tier, confidence, reason = MemoryTier.SHARED, 0.5, "Governance disabled (ablation arm)"
     exp.tier = tier

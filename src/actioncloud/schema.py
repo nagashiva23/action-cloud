@@ -184,6 +184,9 @@ class Experience(ExperienceCreate):
     # --- governance (Memory Judge owns these) -----------------------------
     tier: MemoryTier = MemoryTier.PRIVATE
     confidence: float = Field(0.5, ge=0.0, le=1.0)
+    # Prior mean the confidence posterior is computed from (author reputation
+    # when MEMORY_AUTHOR_PRIOR is on, otherwise the global default 0.6).
+    prior: float = Field(0.6, ge=0.0, le=1.0)
 
     # Observed reuse, which is how an experience earns promotion.
     reuse_count: int = Field(0, ge=0)

@@ -1,0 +1,7 @@
+Highlights (Elsevier: 3-5 bullets, max 85 characters each)
+
+- Shared agent memory spreads flawed procedures unless trust is earned from outcomes.
+- Reuse reports count only against recorded injections to authenticated agents.
+- Governance cut flawed-memory injections from 27.7% to 4.4% versus flat sharing.
+- Injecting one memory beats five: precision 95% vs 57% at equal task success.
+- With 30% colluding agents the benefit vanishes; reputation alone cannot fix it.

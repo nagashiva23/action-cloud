@@ -28,6 +28,9 @@ class MemorySelectionPolicy:
     # report -> 0.40 (excluded); one success -> 0.73; 1 success + 1 failure
     # -> 0.55 (kept).
     min_confidence: float = 0.45
+    # 0 = exact scoring of every visible row; N > 0 = HNSW pre-selects N
+    # nearest neighbours first (use for stores beyond a few thousand rows).
+    ann_candidates: int = 0
     min_tier: MemoryTier = MemoryTier.PRIVATE
 
     @classmethod
@@ -40,5 +43,6 @@ class MemorySelectionPolicy:
             context_token_budget=int(os.environ.get("MEMORY_CONTEXT_TOKEN_BUDGET", "1000")),
             trust_weight=float(os.environ.get("MEMORY_TRUST_WEIGHT", "0.10")),
             min_confidence=float(os.environ.get("MEMORY_MIN_CONFIDENCE", "0.45")),
+            ann_candidates=int(os.environ.get("MEMORY_ANN_CANDIDATES", "0")),
             min_tier=MemoryTier(os.environ.get("MEMORY_MIN_TIER", "private")),
         )

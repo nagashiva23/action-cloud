@@ -51,7 +51,9 @@ def handle_experience_created(payload: dict[str, Any]) -> None:
         exp = Experience(**payload)
     except ValidationError as e:
         raise PermanentError(f"invalid experience payload: {e}") from e
-    process_experience(exp)
+    import os  # noqa: PLC0415
+    process_experience(exp, author_prior=os.environ.get("MEMORY_AUTHOR_PRIOR", "false").lower()
+                       in {"1", "true", "yes"})
 
 
 HANDLERS: dict[str, Callable[[dict[str, Any]], None]] = {
