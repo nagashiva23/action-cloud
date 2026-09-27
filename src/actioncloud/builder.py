@@ -16,6 +16,11 @@ def count_tokens(text: str) -> int:
     return max(1, len(text) // 4)
 
 
+def _relevance(c: Dict[str, Any]) -> float:
+    r = c.get("relevance")
+    return 0.0 if r is None else float(r)
+
+
 def compute_text_similarity(text_a: str, text_b: str) -> float:
     """
     Lightweight string sequence matcher similarity ratio [0.0, 1.0].
@@ -71,35 +76,34 @@ class CompactContextBuilder:
 
     @staticmethod
     def format_single_memory(idx: int, exp: Dict[str, Any]) -> str:
+        """
+        Compact procedural rendering. When an extracted workflow exists its
+        steps ARE the reusable content, so the raw solution text is not
+        repeated (it used to be, doubling the tokens for the same steps).
+        """
         lines = []
         success = exp.get("success", True)
         marker = "WORKED" if success else "FAILED — avoid this approach"
         tier = str(exp.get("tier", "shared")).upper()
-
         lines.append(f"### {idx}. [{marker}] [{tier}] {exp.get('task', '')}")
-        if exp.get("problem"):
-            lines.append(f"- Problem: {exp['problem']}")
-        if exp.get("solution"):
-            lines.append(f"- Solution: {exp['solution']}")
-        elif exp.get("result"):
-            lines.append(f"- Outcome: {exp['result']}")
 
-        # Render structured procedural workflow if extracted
         wf = exp.get("workflow")
-        if isinstance(wf, dict):
-            prereqs = wf.get("prerequisites", [])
-            steps = wf.get("steps", [])
-            pitfalls = wf.get("pitfalls", [])
-
-            if prereqs:
-                lines.append(f"- Prerequisites: {', '.join(prereqs)}")
-            if steps:
-                lines.append("- Procedure:")
-                for step_idx, st in enumerate(steps, 1):
-                    lines.append(f"  {step_idx}. {st}")
-            if pitfalls:
-                lines.append(f"- Pitfalls: {'; '.join(pitfalls)}")
-
+        steps = wf.get("steps", []) if isinstance(wf, dict) else []
+        if steps:
+            if wf.get("prerequisites"):
+                lines.append(f"- Prerequisites: {', '.join(wf['prerequisites'])}")
+            lines.append("- Procedure:")
+            for step_idx, st in enumerate(steps, 1):
+                lines.append(f"  {step_idx}. {st}")
+            if wf.get("pitfalls"):
+                lines.append(f"- Pitfalls: {'; '.join(wf['pitfalls'])}")
+        else:
+            if exp.get("problem"):
+                lines.append(f"- Problem: {exp['problem']}")
+            if exp.get("solution"):
+                lines.append(f"- Solution: {exp['solution']}")
+            elif exp.get("result"):
+                lines.append(f"- Outcome: {exp['result']}")
         return "\n".join(lines)
 
     @classmethod
@@ -113,12 +117,25 @@ class CompactContextBuilder:
         if not candidates:
             return "", [], 0, 0
 
-        # 1. Relevance Threshold Filter
+        # 1. Relevance threshold. A missing score is treated as 0.0 (unknown =
+        #    not relevant). If nothing clears the bar we inject NOTHING: an
+        #    irrelevant memory costs prompt tokens and can mislead the agent,
+        #    which is exactly what the threshold exists to prevent.
         relevant = [
-            c for c in candidates if float(c.get("relevance", 1.0) or 1.0) >= policy.similarity_threshold
+            c for c in candidates
+            if _relevance(c) >= policy.similarity_threshold
+            and float(c.get("confidence", 1.0) if c.get("confidence") is not None else 1.0)
+            >= policy.min_confidence
         ]
         if not relevant:
-            relevant = candidates[:1]  # fallback to top match if none exceed threshold
+            return "", [], len(candidates), 0
+
+        # 1b. Rank by relevance with a small trust bonus, so between two
+        #     similarly relevant memories the better-governed one wins.
+        relevant.sort(
+            key=lambda c: _relevance(c) + policy.trust_weight * float(c.get("confidence") or 0.0),
+            reverse=True,
+        )
 
         # 2. Redundancy Filtering
         non_redundant = filter_redundant_memories(relevant, redundancy_threshold=policy.redundancy_threshold)

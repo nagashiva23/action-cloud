@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "actioncloud"
-version = "0.1.0"
-description = "Distributed memory layer for multi-agent systems"
+version = "0.4.0"
+description = "Governed adaptive experience memory for AI agent fleets"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -23,6 +23,12 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"actioncloud.benchmark" = ["*.json"]
+
+[project.scripts]
+actioncloud-mcp = "actioncloud.mcp_server:main"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

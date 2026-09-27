@@ -1,4 +1,4 @@
-# ActionCloud — Phase 1 dependencies
+# ActionCloud dependencies
 
 # API
 fastapi==0.115.6

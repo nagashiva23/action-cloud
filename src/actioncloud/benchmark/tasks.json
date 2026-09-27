@@ -12,7 +12,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 2,
@@ -27,7 +28,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 3,
@@ -42,7 +44,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 4,
@@ -57,7 +60,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 5,
@@ -72,7 +76,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 6,
@@ -87,7 +92,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 7,
@@ -102,7 +108,8 @@
     "expected_tools": [
       "editor",
       "psql"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 8,
@@ -117,7 +124,8 @@
     "expected_tools": [
       "editor",
       "psql"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 9,
@@ -132,7 +140,8 @@
     "expected_tools": [
       "editor",
       "psql"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 10,
@@ -147,7 +156,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 11,
@@ -162,7 +172,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 12,
@@ -177,7 +188,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 13,
@@ -190,7 +202,8 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 14,
@@ -203,7 +216,8 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 15,
@@ -216,7 +230,8 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 16,
@@ -231,7 +246,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 17,
@@ -246,7 +262,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 18,
@@ -261,7 +278,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 19,
@@ -276,7 +294,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 20,
@@ -291,7 +310,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 21,
@@ -306,7 +326,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 22,
@@ -321,7 +342,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 23,
@@ -336,7 +358,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 24,
@@ -351,7 +374,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 25,
@@ -365,7 +389,8 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 26,
@@ -379,7 +404,8 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 27,
@@ -393,7 +419,8 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 28,
@@ -406,7 +433,8 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 29,
@@ -419,7 +447,8 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 30,
@@ -432,11 +461,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "coding"
   },
   {
     "id": 31,
-    "role": "architecture",
+    "role": "research",
     "task": "Design 4-tier governance hierarchy for memory promotion (untrusted, private, agent, shared)",
     "task_key": "task-governance-tier-hierarchy",
     "technologies": [
@@ -445,11 +475,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "architecture"
   },
   {
     "id": 32,
-    "role": "architecture",
+    "role": "research",
     "task": "Architect MemoryJudge promotion rules based on success rate and reuse thresholds",
     "task_key": "task-governance-tier-hierarchy",
     "technologies": [
@@ -458,11 +489,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "architecture"
   },
   {
     "id": 33,
-    "role": "architecture",
+    "role": "research",
     "task": "Define system boundaries and data flow between agent-private and shared memory stores",
     "task_key": "task-governance-tier-hierarchy",
     "technologies": [
@@ -471,11 +503,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "architecture"
   },
   {
     "id": 34,
-    "role": "architecture",
+    "role": "research",
     "task": "Architect asynchronous experience processing pipeline using AWS SQS and background workers",
     "task_key": "task-sqs-decoupled-worker",
     "technologies": [
@@ -485,11 +518,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "architecture"
   },
   {
     "id": 35,
-    "role": "architecture",
+    "role": "research",
     "task": "Design queue-decoupled architecture separating API REST layer from embedding worker",
     "task_key": "task-sqs-decoupled-worker",
     "technologies": [
@@ -499,11 +533,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "architecture"
   },
   {
     "id": 36,
-    "role": "architecture",
+    "role": "research",
     "task": "Draft architecture for high-throughput memory ingestion using SQS buffer and background workers",
     "task_key": "task-sqs-decoupled-worker",
     "technologies": [
@@ -513,11 +548,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "architecture"
   },
   {
     "id": 37,
-    "role": "architecture",
+    "role": "research",
     "task": "Design HNSW vector indexing parameters (m=16, ef_construction=64) for scaling pgvector",
     "task_key": "task-vector-indexing-strategy",
     "technologies": [
@@ -527,11 +563,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "architecture"
   },
   {
     "id": 38,
-    "role": "architecture",
+    "role": "research",
     "task": "Evaluate IVFFlat vs HNSW indexing strategies for million-vector experience search",
     "task_key": "task-vector-indexing-strategy",
     "technologies": [
@@ -541,11 +578,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "architecture"
   },
   {
     "id": 39,
-    "role": "architecture",
+    "role": "research",
     "task": "Formulate indexing and partitioning strategy for multi-tenant experience embeddings",
     "task_key": "task-vector-indexing-strategy",
     "technologies": [
@@ -555,11 +593,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "architecture"
   },
   {
     "id": 40,
-    "role": "architecture",
+    "role": "research",
     "task": "Architect MCP server integration layer connecting Antigravity IDE with ActionCloud backend",
     "task_key": "task-mcp-integration-arch",
     "technologies": [
@@ -569,11 +608,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "architecture"
   },
   {
     "id": 41,
-    "role": "architecture",
+    "role": "research",
     "task": "Design protocol bridge between IDE Model Context Protocol and ActionCloud REST API",
     "task_key": "task-mcp-integration-arch",
     "technologies": [
@@ -583,11 +623,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "architecture"
   },
   {
     "id": 42,
-    "role": "architecture",
+    "role": "research",
     "task": "Draft component diagram for IDE context sync via MCP stdio connection",
     "task_key": "task-mcp-integration-arch",
     "technologies": [
@@ -597,11 +638,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "architecture"
   },
   {
     "id": 43,
-    "role": "architecture",
+    "role": "research",
     "task": "Design abstract BaseLLM interface and factory pattern supporting Anthropic, Gemini, Groq, and Mock providers",
     "task_key": "task-multi-llm-provider-factory",
     "technologies": [
@@ -611,11 +653,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "architecture"
   },
   {
     "id": 44,
-    "role": "architecture",
+    "role": "research",
     "task": "Architect provider-agnostic LLM abstraction layer for multi-agent benchmark harness",
     "task_key": "task-multi-llm-provider-factory",
     "technologies": [
@@ -625,11 +668,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "architecture"
   },
   {
     "id": 45,
-    "role": "architecture",
+    "role": "research",
     "task": "Define clean LLM interface decoupling agent task execution from provider SDKs",
     "task_key": "task-multi-llm-provider-factory",
     "technologies": [
@@ -639,11 +683,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "architecture"
   },
   {
     "id": 46,
-    "role": "debugging",
+    "role": "devops",
     "task": "Debug psycopg_pool.PoolTimeout error occurring during concurrent test suite execution",
     "task_key": "task-psycopg-pool-timeout-debug",
     "technologies": [
@@ -654,11 +699,12 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "debugging"
   },
   {
     "id": 47,
-    "role": "debugging",
+    "role": "devops",
     "task": "Diagnose connection leak in database context manager leading to pool exhaustion",
     "task_key": "task-psycopg-pool-timeout-debug",
     "technologies": [
@@ -669,11 +715,12 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "debugging"
   },
   {
     "id": 48,
-    "role": "debugging",
+    "role": "devops",
     "task": "Fix connection pool timeout caused by missing conn.close() in async handler",
     "task_key": "task-psycopg-pool-timeout-debug",
     "technologies": [
@@ -684,11 +731,12 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "debugging"
   },
   {
     "id": 49,
-    "role": "debugging",
+    "role": "devops",
     "task": "Debug PostgreSQL container startup failure caused by host port 5432 collision with local postgres",
     "task_key": "task-pgvector-port-collision-debug",
     "technologies": [
@@ -699,11 +747,12 @@
     "expected_tools": [
       "bash",
       "docker"
-    ]
+    ],
+    "category": "debugging"
   },
   {
     "id": 50,
-    "role": "debugging",
+    "role": "devops",
     "task": "Troubleshoot role actioncloud does not exist error on port 5432 after local postgres collision",
     "task_key": "task-pgvector-port-collision-debug",
     "technologies": [
@@ -714,11 +763,12 @@
     "expected_tools": [
       "bash",
       "docker"
-    ]
+    ],
+    "category": "debugging"
   },
   {
     "id": 51,
-    "role": "debugging",
+    "role": "devops",
     "task": "Resolve database connection failure by switching host binding from port 5432 to 5433",
     "task_key": "task-pgvector-port-collision-debug",
     "technologies": [
@@ -729,11 +779,12 @@
     "expected_tools": [
       "bash",
       "docker"
-    ]
+    ],
+    "category": "debugging"
   },
   {
     "id": 52,
-    "role": "debugging",
+    "role": "devops",
     "task": "Debug duplicate message processing in worker caused by short SQS visibility timeout",
     "task_key": "task-sqs-visibility-timeout-debug",
     "technologies": [
@@ -744,11 +795,12 @@
     "expected_tools": [
       "editor",
       "bash"
-    ]
+    ],
+    "category": "debugging"
   },
   {
     "id": 53,
-    "role": "debugging",
+    "role": "devops",
     "task": "Diagnose worker message re-delivery during long-running embedding extraction",
     "task_key": "task-sqs-visibility-timeout-debug",
     "technologies": [
@@ -759,11 +811,12 @@
     "expected_tools": [
       "editor",
       "bash"
-    ]
+    ],
+    "category": "debugging"
   },
   {
     "id": 54,
-    "role": "debugging",
+    "role": "devops",
     "task": "Fix SQS visibility timeout setting to cover long experience processing steps",
     "task_key": "task-sqs-visibility-timeout-debug",
     "technologies": [
@@ -774,11 +827,12 @@
     "expected_tools": [
       "editor",
       "bash"
-    ]
+    ],
+    "category": "debugging"
   },
   {
     "id": 55,
-    "role": "debugging",
+    "role": "devops",
     "task": "Debug HTTP 405 Method Not Allowed error on OPTIONS preflight requests in FastAPI",
     "task_key": "task-fastapi-cors-preflight-debug",
     "technologies": [
@@ -788,11 +842,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "debugging"
   },
   {
     "id": 56,
-    "role": "debugging",
+    "role": "devops",
     "task": "Resolve missing CORS headers error when calling API from web extension frontend",
     "task_key": "task-fastapi-cors-preflight-debug",
     "technologies": [
@@ -802,11 +857,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "debugging"
   },
   {
     "id": 57,
-    "role": "debugging",
+    "role": "devops",
     "task": "Fix preflight OPTIONS request routing in FastAPI CORSMiddleware",
     "task_key": "task-fastapi-cors-preflight-debug",
     "technologies": [
@@ -816,11 +872,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "debugging"
   },
   {
     "id": 58,
-    "role": "debugging",
+    "role": "devops",
     "task": "Debug Pydantic ValidationError when parsing incoming experience payload with missing fields",
     "task_key": "task-pydantic-validation-error-debug",
     "technologies": [
@@ -831,11 +888,12 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "debugging"
   },
   {
     "id": 59,
-    "role": "debugging",
+    "role": "devops",
     "task": "Fix type mismatch error in ExperienceCreate when tags array contains empty strings",
     "task_key": "task-pydantic-validation-error-debug",
     "technologies": [
@@ -846,11 +904,12 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "debugging"
   },
   {
     "id": 60,
-    "role": "debugging",
+    "role": "devops",
     "task": "Resolve validation error on negative token counts in experience request schema",
     "task_key": "task-pydantic-validation-error-debug",
     "technologies": [
@@ -861,11 +920,12 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "debugging"
   },
   {
     "id": 61,
-    "role": "review",
+    "role": "testing",
     "task": "Review MemoryJudge promotion and demotion threshold logic for edge-case race conditions",
     "task_key": "task-review-memory-judge-promotion",
     "technologies": [
@@ -875,11 +935,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "review"
   },
   {
     "id": 62,
-    "role": "review",
+    "role": "testing",
     "task": "Audit MemoryJudge tier transition code for correct success rate calculation",
     "task_key": "task-review-memory-judge-promotion",
     "technologies": [
@@ -889,11 +950,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "review"
   },
   {
     "id": 63,
-    "role": "review",
+    "role": "testing",
     "task": "Perform code review on promotion logic ensuring untrusted experiences cannot leak into shared tier",
     "task_key": "task-review-memory-judge-promotion",
     "technologies": [
@@ -903,11 +965,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "review"
   },
   {
     "id": 64,
-    "role": "review",
+    "role": "testing",
     "task": "Review experience fallback extractor logic when LLM JSON parsing fails",
     "task_key": "task-review-vector-embedding-extractor",
     "technologies": [
@@ -917,11 +980,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "review"
   },
   {
     "id": 65,
-    "role": "review",
+    "role": "testing",
     "task": "Audit embedding generation code for deterministic vector length and normalization",
     "task_key": "task-review-vector-embedding-extractor",
     "technologies": [
@@ -931,11 +995,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "review"
   },
   {
     "id": 66,
-    "role": "review",
+    "role": "testing",
     "task": "Code review experience metadata extraction for proper sanitation of sensitive tokens",
     "task_key": "task-review-vector-embedding-extractor",
     "technologies": [
@@ -945,11 +1010,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "review"
   },
   {
     "id": 67,
-    "role": "review",
+    "role": "testing",
     "task": "Review MCP server JSON-RPC error handling to prevent sensitive stack trace disclosure",
     "task_key": "task-review-mcp-server-security",
     "technologies": [
@@ -959,11 +1025,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "review"
   },
   {
     "id": 68,
-    "role": "review",
+    "role": "testing",
     "task": "Audit MCP tool parameter definitions for input validation compliance",
     "task_key": "task-review-mcp-server-security",
     "technologies": [
@@ -973,11 +1040,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "review"
   },
   {
     "id": 69,
-    "role": "review",
+    "role": "testing",
     "task": "Perform code review on stdio transport handling in ActionCloud MCP server",
     "task_key": "task-review-mcp-server-security",
     "technologies": [
@@ -987,11 +1055,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "review"
   },
   {
     "id": 70,
-    "role": "review",
+    "role": "testing",
     "task": "Review global FastAPI exception handlers for uniform error response payload format",
     "task_key": "task-review-api-exception-handlers",
     "technologies": [
@@ -1001,11 +1070,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "review"
   },
   {
     "id": 71,
-    "role": "review",
+    "role": "testing",
     "task": "Audit HTTP status codes across experience endpoints for REST standards compliance",
     "task_key": "task-review-api-exception-handlers",
     "technologies": [
@@ -1015,11 +1085,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "review"
   },
   {
     "id": 72,
-    "role": "review",
+    "role": "testing",
     "task": "Code review database transaction rollback logic in API exception handling wrapper",
     "task_key": "task-review-api-exception-handlers",
     "technologies": [
@@ -1029,11 +1100,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "review"
   },
   {
     "id": 73,
-    "role": "review",
+    "role": "testing",
     "task": "Review MetricCalculator formulas for Redundancy Index and Knowledge Reuse Rate accuracy",
     "task_key": "task-review-benchmark-metrics-calc",
     "technologies": [
@@ -1043,11 +1115,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "review"
   },
   {
     "id": 74,
-    "role": "review",
+    "role": "testing",
     "task": "Audit empirical evaluation script metrics calculation against raw database records",
     "task_key": "task-review-benchmark-metrics-calc",
     "technologies": [
@@ -1057,11 +1130,12 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "review"
   },
   {
     "id": 75,
-    "role": "review",
+    "role": "testing",
     "task": "Code review benchmark summary generator for correct floating-point rounding",
     "task_key": "task-review-benchmark-metrics-calc",
     "technologies": [
@@ -1071,7 +1145,8 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "review"
   },
   {
     "id": 76,
@@ -1086,7 +1161,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "security"
   },
   {
     "id": 77,
@@ -1101,7 +1177,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "security"
   },
   {
     "id": 78,
@@ -1116,7 +1193,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "security"
   },
   {
     "id": 79,
@@ -1131,7 +1209,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "security"
   },
   {
     "id": 80,
@@ -1146,7 +1225,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "security"
   },
   {
     "id": 81,
@@ -1161,7 +1241,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "security"
   },
   {
     "id": 82,
@@ -1176,7 +1257,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "security"
   },
   {
     "id": 83,
@@ -1191,7 +1273,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "security"
   },
   {
     "id": 84,
@@ -1206,7 +1289,8 @@
     "expected_tools": [
       "editor",
       "pytest"
-    ]
+    ],
+    "category": "security"
   },
   {
     "id": 85,
@@ -1220,7 +1304,8 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "security"
   },
   {
     "id": 86,
@@ -1234,7 +1319,8 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "security"
   },
   {
     "id": 87,
@@ -1248,7 +1334,8 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "security"
   },
   {
     "id": 88,
@@ -1261,7 +1348,8 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "security"
   },
   {
     "id": 89,
@@ -1274,7 +1362,8 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "security"
   },
   {
     "id": 90,
@@ -1287,7 +1376,8 @@
     ],
     "expected_tools": [
       "editor"
-    ]
+    ],
+    "category": "security"
   },
   {
     "id": 91,
@@ -1302,7 +1392,8 @@
     "expected_tools": [
       "docker",
       "bash"
-    ]
+    ],
+    "category": "deployment"
   },
   {
     "id": 92,
@@ -1317,7 +1408,8 @@
     "expected_tools": [
       "docker",
       "bash"
-    ]
+    ],
+    "category": "deployment"
   },
   {
     "id": 93,
@@ -1332,7 +1424,8 @@
     "expected_tools": [
       "docker",
       "bash"
-    ]
+    ],
+    "category": "deployment"
   },
   {
     "id": 94,
@@ -1347,7 +1440,8 @@
     "expected_tools": [
       "docker",
       "bash"
-    ]
+    ],
+    "category": "deployment"
   },
   {
     "id": 95,
@@ -1362,7 +1456,8 @@
     "expected_tools": [
       "docker",
       "bash"
-    ]
+    ],
+    "category": "deployment"
   },
   {
     "id": 96,
@@ -1377,7 +1472,8 @@
     "expected_tools": [
       "docker",
       "bash"
-    ]
+    ],
+    "category": "deployment"
   },
   {
     "id": 97,
@@ -1392,7 +1488,8 @@
     "expected_tools": [
       "docker",
       "bash"
-    ]
+    ],
+    "category": "deployment"
   },
   {
     "id": 98,
@@ -1407,7 +1504,8 @@
     "expected_tools": [
       "docker",
       "bash"
-    ]
+    ],
+    "category": "deployment"
   },
   {
     "id": 99,
@@ -1422,7 +1520,8 @@
     "expected_tools": [
       "docker",
       "bash"
-    ]
+    ],
+    "category": "deployment"
   },
   {
     "id": 100,
@@ -1437,6 +1536,547 @@
     "expected_tools": [
       "docker",
       "bash"
-    ]
+    ],
+    "category": "deployment"
+  },
+  {
+    "id": 101,
+    "role": "documentation",
+    "task": "Write a runbook section for configuring the ActionCloud MCP server in Cursor mcp.json",
+    "task_key": "task-doc-mcp-setup-runbook",
+    "technologies": [
+      "mcp",
+      "docs",
+      "cursor"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "documentation"
+  },
+  {
+    "id": 102,
+    "role": "documentation",
+    "task": "Document how to register the ActionCloud stdio MCP server in an IDE config file",
+    "task_key": "task-doc-mcp-setup-runbook",
+    "technologies": [
+      "mcp",
+      "docs",
+      "cursor"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "documentation"
+  },
+  {
+    "id": 103,
+    "role": "documentation",
+    "task": "Create setup docs explaining MCP client configuration for ActionCloud memory tools",
+    "task_key": "task-doc-mcp-setup-runbook",
+    "technologies": [
+      "mcp",
+      "docs",
+      "cursor"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "documentation"
+  },
+  {
+    "id": 104,
+    "role": "documentation",
+    "task": "Write an architecture decision record for the five-tier memory governance ladder",
+    "task_key": "task-doc-governance-adr",
+    "technologies": [
+      "architecture",
+      "docs",
+      "governance"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "documentation"
+  },
+  {
+    "id": 105,
+    "role": "documentation",
+    "task": "Draft an ADR documenting why memories enter untrusted and earn promotion",
+    "task_key": "task-doc-governance-adr",
+    "technologies": [
+      "architecture",
+      "docs",
+      "governance"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "documentation"
+  },
+  {
+    "id": 106,
+    "role": "documentation",
+    "task": "Record the governance tier design decision and its alternatives in an ADR",
+    "task_key": "task-doc-governance-adr",
+    "technologies": [
+      "architecture",
+      "docs",
+      "governance"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "documentation"
+  },
+  {
+    "id": 107,
+    "role": "data_analysis",
+    "task": "Compute per-task token savings between baseline and memory arms with confidence intervals",
+    "task_key": "task-da-token-savings-analysis",
+    "technologies": [
+      "pandas",
+      "metrics",
+      "statistics"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "data_analysis"
+  },
+  {
+    "id": 108,
+    "role": "data_analysis",
+    "task": "Analyse token usage difference between the stateless and memory-enabled runs",
+    "task_key": "task-da-token-savings-analysis",
+    "technologies": [
+      "pandas",
+      "metrics",
+      "statistics"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "data_analysis"
+  },
+  {
+    "id": 109,
+    "role": "data_analysis",
+    "task": "Quantify token reduction of ActionCloud versus baseline with bootstrap intervals",
+    "task_key": "task-da-token-savings-analysis",
+    "technologies": [
+      "pandas",
+      "metrics",
+      "statistics"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "data_analysis"
+  },
+  {
+    "id": 110,
+    "role": "data_analysis",
+    "task": "Test whether the success rate difference between arms is statistically significant",
+    "task_key": "task-da-success-rate-significance",
+    "technologies": [
+      "scipy",
+      "statistics",
+      "metrics"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "data_analysis"
+  },
+  {
+    "id": 111,
+    "role": "data_analysis",
+    "task": "Run a significance test on task success counts for baseline versus ActionCloud",
+    "task_key": "task-da-success-rate-significance",
+    "technologies": [
+      "scipy",
+      "statistics",
+      "metrics"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "data_analysis"
+  },
+  {
+    "id": 112,
+    "role": "data_analysis",
+    "task": "Check if ActionCloud's success rate improvement is significant with a paired test",
+    "task_key": "task-da-success-rate-significance",
+    "technologies": [
+      "scipy",
+      "statistics",
+      "metrics"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "data_analysis"
+  },
+  {
+    "id": 113,
+    "role": "database",
+    "task": "Tune indexes on the experiences table for run_id and tier filtered queries",
+    "task_key": "task-db-experiences-index-tuning",
+    "technologies": [
+      "postgres",
+      "sql",
+      "indexes"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "database"
+  },
+  {
+    "id": 114,
+    "role": "database",
+    "task": "Optimise slow experiences table queries filtering by run and tier",
+    "task_key": "task-db-experiences-index-tuning",
+    "technologies": [
+      "postgres",
+      "sql",
+      "indexes"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "database"
+  },
+  {
+    "id": 115,
+    "role": "database",
+    "task": "Improve query plans for governance-filtered lookups on experiences",
+    "task_key": "task-db-experiences-index-tuning",
+    "technologies": [
+      "postgres",
+      "sql",
+      "indexes"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "database"
+  },
+  {
+    "id": 116,
+    "role": "database",
+    "task": "Write a migration adding new values to the agent_role Postgres enum",
+    "task_key": "task-db-enum-migration",
+    "technologies": [
+      "postgres",
+      "sql",
+      "migrations"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "database"
+  },
+  {
+    "id": 117,
+    "role": "database",
+    "task": "Extend an existing Postgres enum type without dropping the table",
+    "task_key": "task-db-enum-migration",
+    "technologies": [
+      "postgres",
+      "sql",
+      "migrations"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "database"
+  },
+  {
+    "id": 118,
+    "role": "database",
+    "task": "Create a safe migration that adds roles to the agent_role enum",
+    "task_key": "task-db-enum-migration",
+    "technologies": [
+      "postgres",
+      "sql",
+      "migrations"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "database"
+  },
+  {
+    "id": 119,
+    "role": "ml",
+    "task": "Evaluate embedding models for retrieving similar agent tasks by precision at 1",
+    "task_key": "task-ml-embedding-model-eval",
+    "technologies": [
+      "embeddings",
+      "ml",
+      "retrieval"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "ml"
+  },
+  {
+    "id": 120,
+    "role": "ml",
+    "task": "Compare embedding providers on task similarity retrieval quality",
+    "task_key": "task-ml-embedding-model-eval",
+    "technologies": [
+      "embeddings",
+      "ml",
+      "retrieval"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "ml"
+  },
+  {
+    "id": 121,
+    "role": "ml",
+    "task": "Benchmark embedding models for procedural memory retrieval accuracy",
+    "task_key": "task-ml-embedding-model-eval",
+    "technologies": [
+      "embeddings",
+      "ml",
+      "retrieval"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "ml"
+  },
+  {
+    "id": 122,
+    "role": "ml",
+    "task": "Calibrate the similarity threshold that decides whether a memory is injected",
+    "task_key": "task-ml-threshold-calibration",
+    "technologies": [
+      "ml",
+      "retrieval",
+      "calibration"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "ml"
+  },
+  {
+    "id": 123,
+    "role": "ml",
+    "task": "Choose a relevance cutoff balancing recall and false injections",
+    "task_key": "task-ml-threshold-calibration",
+    "technologies": [
+      "ml",
+      "retrieval",
+      "calibration"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "ml"
+  },
+  {
+    "id": 124,
+    "role": "ml",
+    "task": "Tune the memory injection threshold using same-task and different-task scores",
+    "task_key": "task-ml-threshold-calibration",
+    "technologies": [
+      "ml",
+      "retrieval",
+      "calibration"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "ml"
+  },
+  {
+    "id": 125,
+    "role": "cloud",
+    "task": "Provision an ECS Fargate service running the ActionCloud API and worker",
+    "task_key": "task-cloud-ecs-fargate-deploy",
+    "technologies": [
+      "aws",
+      "ecs",
+      "fargate"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "cloud"
+  },
+  {
+    "id": 126,
+    "role": "cloud",
+    "task": "Deploy ActionCloud API and worker containers on AWS Fargate",
+    "task_key": "task-cloud-ecs-fargate-deploy",
+    "technologies": [
+      "aws",
+      "ecs",
+      "fargate"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "cloud"
+  },
+  {
+    "id": 127,
+    "role": "cloud",
+    "task": "Create AWS ECS task definitions for ActionCloud services on Fargate",
+    "task_key": "task-cloud-ecs-fargate-deploy",
+    "technologies": [
+      "aws",
+      "ecs",
+      "fargate"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "cloud"
+  },
+  {
+    "id": 128,
+    "role": "cloud",
+    "task": "Provision Amazon RDS for PostgreSQL 16 with the pgvector extension for ActionCloud",
+    "task_key": "task-cloud-rds-pgvector",
+    "technologies": [
+      "aws",
+      "rds",
+      "postgres"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "cloud"
+  },
+  {
+    "id": 129,
+    "role": "cloud",
+    "task": "Set up a managed Postgres on RDS that supports vector search",
+    "task_key": "task-cloud-rds-pgvector",
+    "technologies": [
+      "aws",
+      "rds",
+      "postgres"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "cloud"
+  },
+  {
+    "id": 130,
+    "role": "cloud",
+    "task": "Create an RDS Postgres instance and enable pgvector for experience embeddings",
+    "task_key": "task-cloud-rds-pgvector",
+    "technologies": [
+      "aws",
+      "rds",
+      "postgres"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "cloud"
+  },
+  {
+    "id": 131,
+    "role": "monitoring",
+    "task": "Alert when the SQS experience queue backlog keeps growing",
+    "task_key": "task-mon-queue-depth-alert",
+    "technologies": [
+      "prometheus",
+      "sqs",
+      "alerting"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "monitoring"
+  },
+  {
+    "id": 132,
+    "role": "monitoring",
+    "task": "Create an alert on ApproximateNumberOfMessagesVisible for the ingestion queue",
+    "task_key": "task-mon-queue-depth-alert",
+    "technologies": [
+      "prometheus",
+      "sqs",
+      "alerting"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "monitoring"
+  },
+  {
+    "id": 133,
+    "role": "monitoring",
+    "task": "Monitor worker lag by alerting on SQS queue depth",
+    "task_key": "task-mon-queue-depth-alert",
+    "technologies": [
+      "prometheus",
+      "sqs",
+      "alerting"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "monitoring"
+  },
+  {
+    "id": 134,
+    "role": "monitoring",
+    "task": "Define a latency SLO for the memory context endpoint and alert on burn rate",
+    "task_key": "task-mon-retrieval-latency-slo",
+    "technologies": [
+      "prometheus",
+      "grafana",
+      "slo"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "monitoring"
+  },
+  {
+    "id": 135,
+    "role": "monitoring",
+    "task": "Set up an SLO and burn-rate alerts for /context p95 latency",
+    "task_key": "task-mon-retrieval-latency-slo",
+    "technologies": [
+      "prometheus",
+      "grafana",
+      "slo"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "monitoring"
+  },
+  {
+    "id": 136,
+    "role": "monitoring",
+    "task": "Monitor ActionCloud retrieval latency against an SLO in Grafana",
+    "task_key": "task-mon-retrieval-latency-slo",
+    "technologies": [
+      "prometheus",
+      "grafana",
+      "slo"
+    ],
+    "expected_tools": [
+      "editor"
+    ],
+    "category": "monitoring"
   }
 ]

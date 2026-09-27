@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any, Dict, List, Optional
+import re
+from typing import Any, Dict, List, Optional, Tuple
 
 from .llm import LLM, get_llm
 from .schema import Experience
@@ -30,6 +31,36 @@ Output ONLY valid JSON matching this schema:
 """
 
 
+_STEP_RE = re.compile(r"^\s*(?:STEP\s*[:\-]|\d+[.)]|[-*])\s*(.+?)\s*$", re.IGNORECASE)
+
+
+def parse_steps(text: str | None) -> List[str]:
+    """Pull an ordered step list out of 'STEP: x', '1. x' or '- x' lines."""
+    if not text:
+        return []
+    return [m.group(1) for line in text.splitlines() if (m := _STEP_RE.match(line))]
+
+
+def heuristic_extract(exp: Experience) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
+    """
+    Deterministic extraction used when no LLM is configured (or it returns
+    unparseable output). Steps come from the solution/action text itself, so
+    the stored workflow is actually reusable instead of echoing a log line.
+    """
+    steps = parse_steps(exp.solution) or parse_steps(exp.action) or [exp.action]
+    workflow = {
+        "title": f"Workflow for: {exp.task[:60]}",
+        "prerequisites": list(exp.technologies),
+        "steps": steps,
+        "pitfalls": [exp.problem] if exp.problem else [],
+    }
+    triples = [
+        {"subject": tech, "predicate": "used_in_task", "object": exp.task[:60]}
+        for tech in exp.technologies
+    ]
+    return workflow, triples
+
+
 class ExperienceExtractor:
     """
     Extracts structured procedural workflows and knowledge triples from experiences.
@@ -41,7 +72,11 @@ class ExperienceExtractor:
     def extract(self, exp: Experience) -> Tuple[Optional[Dict[str, Any]], List[Dict[str, Any]]]:
         """
         Extract workflow dict and list of triple dicts from an Experience.
+        The mock LLM cannot produce JSON, so it goes straight to the heuristic
+        instead of paying a simulated call that is guaranteed to fail.
         """
+        if getattr(self.llm, "model", "").startswith("mock"):
+            return heuristic_extract(exp)
         user_prompt = (
             f"Task: {exp.task}\n"
             f"Problem: {exp.problem or 'None'}\n"
@@ -64,18 +99,9 @@ class ExperienceExtractor:
             parsed = json.loads(text)
             workflow = parsed.get("workflow")
             triples = parsed.get("knowledge_triples", [])
+            if not isinstance(workflow, dict) or not workflow.get("steps"):
+                raise ValueError("LLM workflow missing steps")
             return workflow, triples
         except Exception as e:
-            log.warning("Extraction LLM call failed or failed to parse JSON (%s); using heuristic fallback", e)
-            # Fallback heuristic workflow generation
-            fallback_workflow = {
-                "title": f"Workflow for: {exp.task[:50]}",
-                "prerequisites": exp.technologies,
-                "steps": [exp.action],
-                "pitfalls": [exp.problem] if exp.problem else [],
-            }
-            fallback_triples = [
-                {"subject": tech, "predicate": "used_in_task", "object": exp.task[:40]}
-                for tech in exp.technologies
-            ]
-            return fallback_workflow, fallback_triples
+            log.warning("Extraction LLM call failed or returned bad JSON (%s); using heuristic", e)
+            return heuristic_extract(exp)

@@ -47,8 +47,16 @@ class Settings:
     # it would change the latency profile you are trying to measure.
     sync_write: bool = field(default_factory=lambda: _env_bool("SYNC_WRITE", False))
 
+    # A full DATABASE_URL (what the README's MCP config sets) wins over the
+    # individual DB_* fields when present.
+    database_url: str | None = field(
+        default_factory=lambda: os.environ.get("DATABASE_URL") or None
+    )
+
     @property
     def dsn(self) -> str:
+        if self.database_url:
+            return self.database_url
         return (
             f"postgresql://{self.db_user}:{self.db_password}"
             f"@{self.db_host}:{self.db_port}/{self.db_name}"

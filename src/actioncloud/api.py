@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from . import db, queue
 from .config import settings
 from .schema import (
+    AgentRole,
     Experience,
     ExperienceCreate,
     ExperienceResult,
@@ -21,8 +22,8 @@ log = logging.getLogger(__name__)
 
 app = FastAPI(
     title="ActionCloud Agent Memory API",
-    version="0.1.0",
-    description="Phase 1 — plumbing only. No extraction, graph, or ranking yet.",
+    version="0.4.0",
+    description="Governed adaptive experience memory for agent fleets.",
 )
 
 
@@ -49,6 +50,8 @@ class ContextRequest(BaseModel):
     query: str
     agent_id: Optional[str] = None
     role: Optional[AgentRole] = None
+    technologies: list[str] = []
+    scope_run_id: Optional[str] = None
     candidate_k: Optional[int] = None
     max_context_memories: Optional[int] = None
     similarity_threshold: Optional[float] = None
@@ -58,7 +61,7 @@ class ContextRequest(BaseModel):
 
 class ReuseReportRequest(BaseModel):
     success: bool
-    agent_id: Optional[str] = None
+    agent_id: str  # the REPORTING agent; self-reports are recorded but not counted
 
 
 @app.get("/health")
@@ -67,18 +70,22 @@ def health() -> dict:
     Report on dependencies rather than just returning 200.
     """
     db_ok = db.health_check()
-    try:
-        queue.get_queue_url()
-        queue_ok = True
-    except Exception as e:  # noqa: BLE001
-        log.warning("queue health check failed: %s", e)
-        queue_ok = False
+    if memory_service.sync_write:
+        queue_ok = None  # not used: writes are processed in-request
+    else:
+        try:
+            queue.get_queue_url()
+            queue_ok = True
+        except Exception as e:  # noqa: BLE001
+            log.warning("queue health check failed: %s", e)
+            queue_ok = False
 
-    healthy = db_ok and queue_ok
+    healthy = db_ok and queue_ok is not False
     return {
         "status": "healthy" if healthy else "degraded",
         "database": db_ok,
         "queue": queue_ok,
+        "write_mode": "sync" if memory_service.sync_write else "queued",
         "mode": "local" if settings.is_local else "aws",
     }
 
@@ -111,14 +118,20 @@ def search(
         description="Trust floor. Phase 2 cross-agent reads should use 'shared'.",
     ),
     agent_id: Optional[str] = Query(
-        None, description="If set, this agent's own private rows are also visible"
+        None, description="Requesting agent: its own PRIVATE/AGENT rows become visible"
     ),
+    agent_role: Optional[AgentRole] = Query(
+        None, description="Requesting agent's role: same-role AGENT-tier rows become visible"
+    ),
+    technologies: list[str] = Query([], description="Tech tags added to the query embedding"),
+    scope_run_id: Optional[str] = Query(None, description="Only search this run's memories"),
 ) -> SearchResponse:
     """
     Phase 2 hybrid retrieval: vector similarity + Postgres full-text ranking.
     """
     results = memory_service.search_memory(
-        query=q, limit=limit, min_tier=min_tier, agent_id=agent_id
+        query=q, limit=limit, min_tier=min_tier, agent_id=agent_id,
+        agent_role=agent_role, technologies=technologies, scope_run_id=scope_run_id,
     )
     return SearchResponse(query=q, count=len(results), results=results)
 
@@ -141,7 +154,8 @@ def prepare_context(req: ContextRequest) -> dict:
         pol.redundancy_threshold = req.redundancy_threshold
 
     return memory_service.prepare_context(
-        query=req.query, agent_id=req.agent_id, role=req.role, policy=pol
+        query=req.query, agent_id=req.agent_id, role=req.role, policy=pol,
+        technologies=req.technologies, scope_run_id=req.scope_run_id,
     )
 
 
@@ -159,6 +173,8 @@ def report_experience_reuse(
         )
     except KeyError:
         raise HTTPException(status_code=404, detail="experience not found")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.get("/experiences/{experience_id}")

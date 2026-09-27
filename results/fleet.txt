@@ -1,0 +1,13 @@
+Fleet simulation fleet-f232e401: 408 tasks, one agent each, 12 roles, provider=sim
+
+                                baseline   actioncloud
+  success %                        64.71         85.29
+  tokens / task                    928.7         593.3
+  total cost $                  5.247237      2.674062
+  redundancy index                   1.0        0.0336
+  retrieval precision %              0.0         94.44
+  poisoned injections %              0.0          4.02
+
+Governance tiers: {'private': 17, 'agent': 281, 'shared': 83, 'validated': 27, 'quarantined': 1}
+Counted reuse reports: 272  (cross-role: 9)
+Roles with memories promoted to SHARED or above: 12 / 12

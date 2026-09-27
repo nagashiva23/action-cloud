@@ -38,8 +38,8 @@ class MemoryTier(str, Enum):
     transitions; nothing else may write this field.
     """
 
-    PRIVATE = "private"                # visible only to the run that created it
-    AGENT = "agent"                    # visible to the same agent across runs
+    PRIVATE = "private"                # visible only to the authoring agent
+    AGENT = "agent"                    # visible to agents of the same role
     SHARED = "shared"                  # visible fleet-wide, not yet validated
     VALIDATED = "validated"            # proven by repeated successful reuse
     ORGANIZATIONAL = "organizational"  # canonical knowledge
@@ -51,6 +51,28 @@ class MemoryTier(str, Enum):
     def is_visible_to_fleet(self) -> bool:
         """Whether an arbitrary agent may retrieve this experience."""
         return self.rank >= MemoryTier.SHARED.rank
+
+    def is_visible_to(
+        self,
+        *,
+        author_agent_id: str,
+        author_role: str,
+        requester_agent_id: Optional[str],
+        requester_role: Optional[str],
+    ) -> bool:
+        """
+        Python mirror of the SQL visibility rule in db.VISIBILITY_SQL.
+
+        PRIVATE -> author only. AGENT -> author + same role. SHARED+ -> everyone.
+        A requester with no identity sees only fleet-visible memories.
+        """
+        if self.is_visible_to_fleet():
+            return True
+        if requester_agent_id is not None and requester_agent_id == author_agent_id:
+            return True
+        if self is MemoryTier.AGENT and requester_role is not None:
+            return requester_role == author_role
+        return False
 
 
 _TIER_RANK = {
