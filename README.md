@@ -1,260 +1,392 @@
 # ActionCloud
 
-Governed adaptive experience memory for AI agent fleets.
+**Governed experience memory for AI agent fleets.**
 
-Agents store what they did on past tasks; ActionCloud retrieves the relevant experience for a new task, filters it for relevance, redundancy and trust, and injects a compact, token-budgeted procedure into the agent's prompt. A governance layer (the **Memory Judge**) learns from reuse outcomes which memories actually work, promoting those and holding back those that don't — so one agent's subtly wrong solution doesn't spread through the fleet.
+ActionCloud lets AI agents learn from each other's work. Agents record what they did; before starting a new task, an agent receives the single most relevant *proven* procedure from the fleet as a compact, token-budgeted prompt block. A governance layer tracks whether reused memories actually worked, so good procedures spread and flawed ones are held back.
 
-Design principle: **maximise useful memory per prompt token, not retrieved context size.** The evaluation below supports this: injecting one well-chosen memory beats injecting five.
+![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white)
+![MCP](https://img.shields.io/badge/MCP-stdio%20server-6E56CF)
+![Status](https://img.shields.io/badge/status-beta-orange)
 
 ---
 
-## Architecture
+## Contents
+
+- [Why ActionCloud](#why-actioncloud)
+- [How it works](#how-it-works)
+- [Quickstart](#quickstart)
+- [Connecting agents](#connecting-agents)
+- [API reference](#api-reference)
+- [Governance model](#governance-model)
+- [Configuration](#configuration)
+- [Deployment](#deployment)
+- [Evaluation](#evaluation)
+- [Development](#development)
+- [Security](#security)
+- [Limitations and roadmap](#limitations-and-roadmap)
+
+---
+
+## Why ActionCloud
+
+Agent fleets repeat work. Ten agents hit the same Docker, database or CI problem and each re-derives the fix from scratch, paying for the same reasoning tokens every time. Naively sharing everything makes it worse: prompts bloat, and one agent's subtly wrong answer propagates to every other agent.
+
+ActionCloud is built around three decisions:
+
+- **Density over volume.** Inject one relevant, compact procedure rather than a pile of loosely related history. In our evaluation, injecting one memory beats injecting five.
+- **Trust is earned.** New memories start with narrow visibility and are promoted only when *other* agents report that reusing them worked.
+- **Evidence is authenticated.** Outcome reports come from key-authenticated agents and count only for memories that agent was actually given, so governance can't be gamed.
+
+## Features
+
+- **Hybrid retrieval.** pgvector cosine similarity plus Postgres full-text ranking, with a calibrated relevance threshold. When nothing clears the threshold, nothing is injected.
+- **Compact context builder.** Relevance filtering, trust-aware ranking, near-duplicate removal and a hard token budget. Output is a structured procedure: prerequisites, steps and pitfalls.
+- **Memory Judge.** A five-tier trust ladder, a confidence estimate updated on every outcome report, and automatic quarantine of failing memories. Every tier change is audited.
+- **Authenticated agents.** Per-agent API keys (stored hashed). Identity and role come from the key, never from the request.
+- **Two interfaces, one service.** A REST API (FastAPI) and an MCP stdio server for Claude Desktop, Cursor and other MCP clients.
+- **Queue or in-request writes.** Amazon SQS with an idempotent worker for production, or synchronous writes for single-node setups. Both run the same ingest pipeline.
+- **Built-in evaluation harness.** 136 tasks across 12 agent roles, ground-truth verification, and ablations. It runs offline in a simulated environment, or against a real LLM.
+
+---
+
+## How it works
 
 ```mermaid
-graph TD
-    subgraph Clients
-        MCP[MCP clients<br/>Claude Desktop / Cursor / IDEs]
-        REST[REST clients / agents]
-    end
-
-    subgraph Service
-        MS[MemoryService]
-        POL[MemorySelectionPolicy<br/>candidate_k=10 · k_inject=1<br/>threshold=0.30 · min_confidence=0.45]
-        CCB[CompactContextBuilder<br/>relevance → trust rank → redundancy → token budget]
-        MJ[MemoryJudge<br/>initial tier · confidence posterior · promote / quarantine]
-    end
-
-    subgraph Ingest
-        SQS[SQS / LocalStack]
-        W[Worker]
-        P[Ingest pipeline<br/>tier → extract workflow → embed → one transaction]
-    end
-
-    DB[(PostgreSQL 16 + pgvector<br/>experiences · tier_transitions · reuse_events)]
-
-    MCP -->|stdio JSON-RPC| MS
-    REST -->|HTTP| MS
-    MS -->|queued write| SQS --> W --> P
-    MS -->|SYNC_WRITE=true| P
-    P --> DB
-    MS -->|governed hybrid search| DB
-    MS --> POL --> CCB
-    MS -->|reuse outcome, row-locked| MJ --> DB
+graph LR
+    A[Agent] -->|1 get context| API
+    API --> R[Hybrid search<br/>visibility + trust filters]
+    R --> B[Context builder<br/>threshold · rank · dedupe · budget]
+    B -->|2 compact procedure| A
+    A -->|3 store experience| P[Ingest pipeline<br/>tier · extract · embed]
+    A -->|4 report outcome| J[Memory Judge]
+    P --> DB[(Postgres + pgvector)]
+    J -->|confidence · promote · quarantine| DB
+    R --- DB
 ```
 
-| Layer | Components |
-| :--- | :--- |
-| API | FastAPI (`api.py`), MCP stdio server (`mcp_server.py`), both over one `MemoryService` |
-| Ingest | `pipeline.py` — shared by the SQS worker and the synchronous path, idempotent per experience id |
-| Retrieval | Hybrid pgvector cosine + Postgres full-text score, visibility rules enforced in SQL, optional run scoping |
-| Context | `builder.py` — threshold, trust-aware ranking, redundancy filter, token budget, compact procedure format |
-| Governance | `judge.py` (pure decision function) applied inside a `SELECT … FOR UPDATE` transaction (`db.apply_reuse`) |
-| Embeddings | `hashing` (default: offline lexical feature hashing), `gemini`, `openai` |
-| Evaluation | `benchmark/` — 136 tasks, ground-truth procedures, verifier, simulated agent environment, harness |
-
----
-
-## Governance
-
-### Tiers and visibility
-
-| Tier | Who can retrieve it | How a memory gets here |
-| :--- | :--- | :--- |
-| `PRIVATE` | Only its author | Self-assessed failure, or quarantined |
-| `AGENT` | Author + agents of the **same role** | Self-assessed success (entry point) |
-| `SHARED` | Every agent | ≥ 1 successful reuse by *another* agent |
-| `VALIDATED` | Every agent | ≥ 3 counted reuses at ≥ 80 % success |
-| `ORGANIZATIONAL` | Every agent | ≥ 10 counted reuses at ≥ 90 % success |
-
-A caller with no identity sees only `SHARED` and above. Knowledge therefore spreads **within a role first** and **across roles only after it has proven itself**.
-
-### Outcome feedback
-
-After using injected memories, an agent reports whether its task actually succeeded (`reuse_memory` / `POST /experiences/{id}/reuse`). An author can also report that its *own* memory turned out wrong.
-
-- **Reports count only against a real injection.** A report counts if `get_memory_context` actually put that memory in front of the reporting agent, and each injection earns at most one counted report. Reporting on a memory you were never shown, or reporting ten times, earns nothing.
-- **Positive self-reports are ignored.** An agent cannot vouch for its own memory.
-- **Negative self-reports count, once.** "My solution failed CI" is exactly the evidence needed.
-- **Confidence is updated on every counted report** as a Beta-posterior mean, `(successes + 2·0.6) / (reports + 2)`. Memories below `min_confidence = 0.45` are not injected. One failed report takes a new memory from 0.60 to 0.40.
-- **Quarantine.** When a memory has ≥ 3 reports at < 40 % success, it is demoted to `PRIVATE`. Quarantine is terminal for automatic governance.
-- **Everything is audited.** Every tier change goes to `tier_transitions`, and every report to `reuse_events`, with who reported it and whether it counted.
-
-In practice, **confidence gating does most of the work**: a bad memory usually stops being injected after one failed report, long before it has the three reports needed for formal quarantine.
-
----
-
-### Identity
-
-Every agent is registered with a fixed role and gets an API key; only a SHA-256 hash of the key is stored.
-
-- **The REST API takes `agent_id` and role from the key.** A request naming a different agent gets `403`. So an agent cannot read another agent's `PRIVATE` memories, or report outcomes under a second identity to get around the self-report rule.
-- **Only an admin can register agents** (`ACTIONCLOUD_ADMIN_KEY` or the CLI), so identities can't be minted at will.
-- **The MCP server acts as the agent owning `ACTIONCLOUD_API_KEY`.** It holds database credentials itself, so for MCP this keeps honest clients to one identity; the REST API is the actual security boundary.
-- **The in-process experiment client is trusted** and not authenticated.
-
-`tests/test_auth.py` runs each of the old attacks against the live API.
-
----
-
-## Evaluation
-
-### Setup
-
-- **Workload:** 136 tasks in 45 task families (paraphrases of the same problem) across all 12 roles, run for 3 epochs = 408 tasks per arm. Each family has a ground-truth procedure of 4 verifiable steps (`benchmark/procedures.json`).
-- **Grading:** the same `TaskVerifier` grades every arm:
-  - *strict* (all steps present) is the reported outcome;
-  - *lenient* (≤ 1 step missing) is what the agent itself believes and stores. Some stored "successes" are therefore wrong, which is the realistic failure mode governance must handle.
-- **Isolation:** every arm has its own `run_id`, and retrieval is scoped to it. Every arm sees the same task order and the same per-task randomness. Results are mean ± sd over 5 seeds.
-- **Arms:**
-  - `baseline`: no memory.
-  - `flat_memory`: everything shared immediately, no feedback.
-  - `actioncloud`: full governance, with 70 % of task outcomes observed.
-
-### How to read these numbers
-
-These runs use `LLM_PROVIDER=sim`, a **simulated agent environment** (`benchmark/simulator.py`), not a real LLM. The simulator's assumptions are explicit parameters:
-
-- With no memory, it solves a task 65 % of the time.
-- Following a correct memory succeeds 97 % of the time and uses far fewer output tokens.
-- An incomplete memory misleads it 85 % of the time.
-
-So **the size of the benefit of a correct memory is an assumption, not a finding.**
-
-What the simulation *does* measure is everything ActionCloud controls:
-- whether retrieval surfaces a memory from the right task family;
-- how many prompt tokens the context costs;
-- how often flawed memories get injected;
-- how those combine under the stated assumptions.
-
-To replace the assumptions with a real model, run the same harness with `LLM_PROVIDER=anthropic|gemini|groq`. The verifier and metrics are unchanged.
-
-### Main result (`results/main.md`)
-
-| Arm | Success % | Retrieval precision % | Misled % | Poisoned injections % | Redundancy index | Tokens / task | $ / success |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| baseline | 65.0 ± 2.9 | — | — | — | 1.000 | 928 | 0.0198 |
-| flat_memory | 75.4 ± 4.9 | 95.2 ± 0.3 | 22.5 ± 5.1 | 27.7 ± 5.3 | 0.017 | 608 | 0.0089 |
-| **actioncloud** | **86.8 ± 1.1** | 95.0 ± 1.1 | **7.1 ± 1.2** | **4.4 ± 1.0** | 0.029 | **591** | **0.0075** |
-
-Against baseline, ActionCloud saves 36.4 ± 0.4 % of tokens and 49.4 ± 0.5 % of cost, with +21.8 ± 2.3 pp success. Flat memory gets similar token savings but only +10.5 ± 4.3 pp. The difference is governance: about 28 % of flat memory's same-family injections were flawed memories, versus 4.4 % with ActionCloud.
-
-### Ablations
-
-| Question | Finding | File |
-| :--- | :--- | :--- |
-| How many memories should be injected? | **One.** Going from k=1 to k=5 drops precision from 95 % to 57 % and raises context from 107 to 162 tokens per task, with no success gain. | `results/k.md` |
-| Does the relevance threshold matter? | Yes, moderately. Always injecting the top hit (threshold 0) gives 80 % precision and −2.5 pp success versus threshold 0.30. | `results/threshold.md` |
-| How much does governance depend on feedback? | A lot. With 30 / 70 / 100 % of outcomes observed, poisoned injections are 12.3 / 4.4 / 0.0 % and success is 81.5 / 86.8 / 89.8 %. Without observable outcomes, governance can't beat flat memory. | `results/feedback.md` |
-| Fleet with one agent per task, 12 roles | All 12 roles end up with memories promoted to SHARED or above. Cross-role reuse is rare (9 of 272 counted reports), because each benchmark task family belongs to one role. | `results/fleet.txt` |
-
-### Retrieval quality (`results/calibration.txt`)
-
-With the default offline `hashing` embedder and the query built as task + technologies, the nearest stored neighbour is from the same task family for **94.1 %** of the 136 tasks. At the 0.30 threshold, recall on same-family pairs is 90.6 % and the false-positive rate on different-family pairs is 1.0 %.
-
-Caveat: tasks in the same family share technology tags, which helps a lexical embedder. Paraphrases with no shared vocabulary need `EMBEDDING_PROVIDER=gemini` or `openai`. Re-run `make calibrate` after switching provider.
-
-### Metric definitions (`metrics.py`)
-
-- **Retrieval precision:** injected memories from the same task family ÷ injected memories.
-- **Misled rate:** tasks that received a same-family memory and still failed ÷ tasks that received one.
-- **Poisoned injections:** same-family injections of memories whose own task had actually failed.
-- **Redundancy index:** of the tasks whose family was *already solved* earlier in the run, the fraction solved again without a same-family memory. The baseline is 1.0 by construction.
-- **Injection rate** (formerly "Knowledge Reuse Rate"): tasks that received any memory ÷ tasks.
+1. **Retrieve.** Before a task, the agent asks for context. ActionCloud searches the memories this agent is allowed to see, drops anything below the relevance threshold or the confidence floor, removes duplicates, and returns at most `k` procedures within the token budget.
+2. **Act.** The agent prepends the block to its prompt and does the task.
+3. **Store.** The agent records what it did. The pipeline assigns an initial tier, extracts a reusable step list, embeds the task, and writes everything in one idempotent transaction.
+4. **Report.** The agent reports whether the injected memory worked. The Memory Judge updates confidence and, when thresholds are met, promotes or quarantines the memory.
 
 ---
 
 ## Quickstart
 
-```bash
-make setup                 # venv + deps, copies .env.example -> .env
-make up                    # Postgres 16 + pgvector (port 5433) and LocalStack SQS
-make migrate               # only for a volume created before sql/003 existed
-make test                  # 101 tests (DB-backed ones skip if Postgres is down)
-make agent ID=cursor-1 ROLE=coding   # register an agent; prints its API key once
-
-make experiment            # all evaluation presets, 5 seeds -> results/
-make fleet                 # 12-role fleet simulation
-```
-
-Run the service (queued production path):
+**Prerequisites:** Docker Desktop and Python 3.11+.
 
 ```bash
-make api       # terminal 1
-make worker    # terminal 2
-make verify    # terminal 3: end-to-end check
+git clone https://github.com/nagashiva23/action-cloud.git && cd action-cloud
+make setup          # virtualenv + dependencies; creates .env from .env.example
+make up             # Postgres 16 + pgvector and LocalStack (SQS)
+make test           # 101 tests
 ```
 
-Or skip the worker and LocalStack entirely with `SYNC_WRITE=true`: writes go through the same pipeline, in-request.
+**Run the API** (in-request writes, so no worker is needed):
+
+```bash
+export ACTIONCLOUD_ADMIN_KEY=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))")
+SYNC_WRITE=true make api
+```
+
+**Register two agents.** Each key is printed once; store it.
+
+```bash
+make agent ID=deployer-1 ROLE=deployment      # -> ac_...   (call it $KEY_A)
+make agent ID=deployer-2 ROLE=deployment      # -> ac_...   (call it $KEY_B)
+```
+
+**Agent 1 records an experience:**
+
+```bash
+curl -s -X POST localhost:8000/experiences \
+  -H "X-API-Key: $KEY_A" -H "Content-Type: application/json" -d '{
+    "task": "Fix PostgreSQL container failing with pgvector extension missing",
+    "action": "1. Switch the image to pgvector/pgvector:pg16\n2. Recreate the volume with docker compose down -v\n3. Run CREATE EXTENSION IF NOT EXISTS vector",
+    "solution": "1. Switch the image to pgvector/pgvector:pg16\n2. Recreate the volume with docker compose down -v\n3. Run CREATE EXTENSION IF NOT EXISTS vector",
+    "result": "Postgres starts with the vector extension",
+    "success": true,
+    "technologies": ["docker", "postgres", "pgvector"],
+    "run_id": "quickstart", "system": "actioncloud"
+  }'
+# {"id":"a03b25f9-…","queued":false,"message":"processed synchronously"}
+```
+
+**Agent 2 hits a similar problem and asks for context:**
+
+```bash
+curl -s -X POST localhost:8000/context \
+  -H "X-API-Key: $KEY_B" -H "Content-Type: application/json" \
+  -d '{"query": "pgvector extension missing in my Postgres docker container",
+       "technologies": ["docker", "postgres", "pgvector"]}'
+```
+
+The `context` field of the response, which is ready to prepend to a prompt:
+
+```text
+## Relevant prior experience from other agents
+
+### 1. [WORKED] [AGENT] Fix PostgreSQL container failing with pgvector extension missing
+- Prerequisites: docker, postgres, pgvector
+- Procedure:
+  1. Switch the image to pgvector/pgvector:pg16
+  2. Recreate the volume with docker compose down -v
+  3. Run CREATE EXTENSION IF NOT EXISTS vector
+Use the above if it applies. If it does not, solve the task directly and ignore it.
+```
+
+The full response also carries `"injected_experience_ids"`, `"final_count": 1` and `"context_tokens": 106`.
+
+**Agent 2 reports that it worked**, which promotes the memory fleet-wide:
+
+```bash
+curl -s -X POST localhost:8000/experiences/<id>/reuse \
+  -H "X-API-Key: $KEY_B" -H "Content-Type: application/json" -d '{"success": true}'
+# {"counted":true,"tier":"shared","confidence":0.7333,"transition":"shared",
+#  "reason":"Promoted to shared: successful reuse by another agent", …}
+```
 
 ---
 
-## MCP integration
+## Connecting agents
+
+### MCP (Claude Desktop, Cursor, and other MCP clients)
 
 ```json
 {
   "mcpServers": {
     "actioncloud": {
-      "command": "/path/to/actioncloud/.venv/bin/python",
+      "command": "/path/to/action-cloud/.venv/bin/python",
       "args": ["-m", "actioncloud.mcp_server"],
       "env": {
-        "PYTHONPATH": "/path/to/actioncloud/src",
+        "PYTHONPATH": "/path/to/action-cloud/src",
         "DATABASE_URL": "postgresql://actioncloud:actioncloud@localhost:5433/actioncloud",
         "SYNC_WRITE": "true",
-        "ACTIONCLOUD_API_KEY": "ac_... (from make agent)"
+        "ACTIONCLOUD_API_KEY": "ac_…"
       }
     }
   }
 }
 ```
 
-| Tool | Arguments | Purpose |
-| :--- | :--- | :--- |
-| `get_memory_context` | `task`, `agent_id`, `agent_role`, `technologies`, `k_inject`, `token_budget` | Compact memory block to prepend to your prompt, plus the ids to report on |
-| `search_memory` | `query`, `agent_id`, `agent_role`, `limit`, `min_tier` | Governed hybrid search |
-| `remember_experience` | `task`, `action_taken`, `result`, `success`, `agent_id`, `agent_role`, `problem`, `solution`, `technologies` | Store an experience (numbered steps extract best) |
-| `reuse_memory` | `experience_id`, `success`, `agent_id` | Report whether a memory helped; drives governance |
-| `get_memory_metrics` | `run_id` | Aggregate metrics |
+The server acts as the agent that owns `ACTIONCLOUD_API_KEY`. The typical tool loop is `get_memory_context` → do the task → `reuse_memory` for each returned id → `remember_experience`.
 
-With `ACTIONCLOUD_API_KEY` set, `agent_id` and `agent_role` come from the key and can be omitted; naming a different agent is an error.
+### Python
 
-Reuse credit requires that the memory came from `get_memory_context`; memories found through `search_memory` alone earn no credit.
+```python
+from actioncloud.client import ActionCloudClient
+from actioncloud.schema import AgentRole, SystemCondition
 
-Older argument names (`query`, `role`, `max_memories`, `action`) and tool names (`search_fleet_memory`, `store_experience`, `report_memory_reuse`, `get_fleet_metrics`) are still accepted. Errors are returned as `isError` results without internal details.
+with ActionCloudClient(agent_id="deployer-2", agent_role=AgentRole.DEPLOYMENT,
+                       api_key="ac_…") as ac:
+    ctx = ac.context("pgvector extension missing in Postgres container",
+                     technologies=["docker", "postgres", "pgvector"])
+    prompt = f"{ctx['context']}\n\n## Your task\n…"          # send to your LLM
 
-## REST API
+    ok = True                                                # did the task actually work?
+    for exp_id in ctx["injected_experience_ids"]:
+        ac.report_reuse(exp_id, success=ok)
 
-Every endpoint except `/health` requires an agent key: `X-API-Key: ac_...` (or `Authorization: Bearer ac_...`). `agent_id` and role come from the key, so they can be left out of request bodies.
+    ac.store(task="Fix pgvector extension missing", action="1. …\n2. …",
+             result="Postgres up with vector", success=ok,
+             run_id="prod", system=SystemCondition.ACTIONCLOUD,
+             technologies=["docker", "postgres", "pgvector"])
+```
+
+Retrieval failures degrade gracefully: if ActionCloud is unreachable, `context()` returns an empty block and the agent carries on without memory.
+
+---
+
+## API reference
+
+### REST
+
+Every endpoint except `/health` requires an agent key, sent as `X-API-Key: ac_…` or `Authorization: Bearer ac_…`. The caller's `agent_id` and role come from the key and may be omitted from request bodies; naming a different agent returns `403`. Interactive docs are at `/docs` while the API is running.
 
 | Endpoint | Method | Description |
 | :--- | :--- | :--- |
-| `/health` | GET | Database and queue status (queue shown as not required when `SYNC_WRITE=true`) |
-| `/experiences` | POST | Store an experience (`202` when queued) |
-| `/search` | GET | Governed hybrid search (`q`, `agent_id`, `agent_role`, `technologies`, `scope_run_id`, `min_tier`, `limit`) |
-| `/context` | POST | Compact, governed context block for a task |
-| `/experiences/{id}/reuse` | POST | Outcome report `{success}`. Counted only against a prior injection to this agent. |
-| `/experiences/{id}` | GET | Full record, if visible to this agent (otherwise `404`) |
-| `/agents` | POST | Admin: register an agent `{agent_id, agent_role}`; returns its key once |
-| `/agents/{id}` | DELETE | Admin: revoke an agent's key |
-| `/metrics` | GET | Metrics computed from stored experiences. Note: stored `success` is each agent's self-assessment, so it runs higher than verified success. |
+| `/health` | GET | Database and queue status (unauthenticated) |
+| `/context` | POST | Compact, governed context block for a task. Records which memories were injected. |
+| `/experiences` | POST | Store an experience. Returns `202` when queued. |
+| `/experiences/{id}/reuse` | POST | Report `{success}` for a memory you were given. Counted once per injection. |
+| `/experiences/{id}` | GET | Full record, if visible to the caller (otherwise `404`) |
+| `/search` | GET | Governed hybrid search (`q`, `technologies`, `limit`, `min_tier`, `scope_run_id`) |
+| `/metrics` | GET | Aggregate metrics over stored experiences |
+| `/agents` | POST | **Admin:** register `{agent_id, agent_role}`; returns the API key once |
+| `/agents/{id}` | DELETE | **Admin:** revoke an agent's key |
+
+### MCP tools
+
+| Tool | Key arguments | Purpose |
+| :--- | :--- | :--- |
+| `get_memory_context` | `task`, `technologies`, `k_inject`, `token_budget` | Compact memory block plus the ids to report on |
+| `search_memory` | `query`, `limit`, `min_tier` | Governed hybrid search |
+| `remember_experience` | `task`, `action_taken`, `result`, `success`, `solution`, `technologies` | Store an experience (numbered steps extract best) |
+| `reuse_memory` | `experience_id`, `success` | Report whether an injected memory worked |
+| `get_memory_metrics` | `run_id` | Aggregate metrics |
+
+Legacy names are still accepted: tools `search_fleet_memory`, `store_experience`, `report_memory_reuse`, `get_fleet_metrics`; arguments `query`, `role`, `max_memories`, `action`. Errors come back as `isError` results without internal details.
+
+---
+
+## Governance model
+
+### Trust tiers
+
+| Tier | Visible to | How a memory gets here |
+| :--- | :--- | :--- |
+| `PRIVATE` | Its author only | Self-assessed failure, or quarantined |
+| `AGENT` | Author + agents of the same role | Self-assessed success (entry point) |
+| `SHARED` | All agents | ≥ 1 counted successful reuse by another agent |
+| `VALIDATED` | All agents | ≥ 3 counted reuses at ≥ 80 % success |
+| `ORGANIZATIONAL` | All agents | ≥ 10 counted reuses at ≥ 90 % success |
+
+Knowledge spreads within a role first, and across roles only after it has proven itself.
+
+### Outcome reports
+
+- **Counted only against real injections.** A report counts only if `/context` actually gave that memory to the reporting agent, and each injection earns at most one counted report.
+- **No self-promotion.** An author's positive report on its own memory is ignored. A negative one ("my solution failed CI") counts, once.
+- **Confidence tracks evidence.** Confidence is updated on every counted report as `(successes + 1.2) / (reports + 2)`, a Beta-prior mean centred on 0.6. Memories below `MEMORY_MIN_CONFIDENCE` (0.45) are not injected, so one failed reuse is enough to stop a new memory spreading.
+- **Quarantine.** At ≥ 3 reports with < 40 % success, a memory is demoted to `PRIVATE`.
+- **Audit.** Every tier change is written to `tier_transitions`, every report to `reuse_events`, and every injection to `injections`.
 
 ---
 
 ## Configuration
 
-See `.env.example`. The main settings:
+All settings are environment variables; see [`.env.example`](.env.example).
 
-- `EMBEDDING_PROVIDER`: `hashing` (default), `gemini` or `openai`.
-- `LLM_PROVIDER`: `sim`, `mock`, `anthropic`, `gemini` or `groq`.
-- `SYNC_WRITE`: process writes in-request instead of through the queue.
-- `DATABASE_URL`: a full connection URL, overriding the `DB_*` fields.
-- `AUTH_REQUIRED` (default `true`), `ACTIONCLOUD_ADMIN_KEY`, `ACTIONCLOUD_API_KEY`: see *Identity*.
-- Retrieval policy: the `MEMORY_*` variables.
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| **Database** | | |
+| `DATABASE_URL` | — | Full connection URL; overrides the `DB_*` fields |
+| `DB_HOST` / `DB_PORT` / `DB_NAME` / `DB_USER` / `DB_PASSWORD` | `localhost` / `5433`¹ / `actioncloud` / `actioncloud` / `actioncloud` | Postgres connection |
+| **Auth** | | |
+| `AUTH_REQUIRED` | `true` | Require agent API keys on the REST API |
+| `ACTIONCLOUD_ADMIN_KEY` | — | Enables `POST`/`DELETE /agents` |
+| `ACTIONCLOUD_API_KEY` | — | Identity used by the MCP server and the Python client |
+| **Writes** | | |
+| `SYNC_WRITE` | `false` | Process writes in-request instead of through SQS |
+| `QUEUE_NAME` / `AWS_REGION` | `actioncloud-experiences` / `us-east-1` | SQS queue |
+| `AWS_ENDPOINT_URL` | — | Set for LocalStack; leave unset on AWS |
+| `WORKER_MAX_RECEIVES` | `5` | Deliveries before the worker drops a failing message |
+| **Retrieval** | | |
+| `EMBEDDING_PROVIDER` | `hashing` | `hashing` (offline, lexical), `gemini` or `openai` |
+| `EMBEDDING_DIM` | `1536` | Vector size; fixed by the schema |
+| `MEMORY_MAX_CONTEXT_MEMORIES` | `1` | Memories injected per task (`k`) |
+| `MEMORY_SIMILARITY_THRESHOLD` | `0.30` | Minimum relevance to inject; re-run `make calibrate` after changing embedder |
+| `MEMORY_MIN_CONFIDENCE` | `0.45` | Confidence floor for injection |
+| `MEMORY_CONTEXT_TOKEN_BUDGET` | `1000` | Hard cap on context size |
+| `MEMORY_CANDIDATE_K` / `MEMORY_REDUNDANCY_THRESHOLD` / `MEMORY_TRUST_WEIGHT` | `10` / `0.85` / `0.10` | Candidate pool, duplicate cutoff, trust ranking bonus |
+| **Models** | | |
+| `LLM_PROVIDER` | `mock` | Extraction and benchmark agents: `sim`, `mock`, `anthropic`, `gemini`, `groq` |
+| `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` / `GROQ_API_KEY` / `OPENAI_API_KEY` | — | Provider credentials |
 
-## Known limitations
+¹ `5433` in `.env.example` and `docker-compose.yml`, which avoids clashing with a locally installed Postgres. `docker-compose.yml` publishes on `DB_PORT`, so changing it in `.env` moves both.
 
-- **Simulated results.** The headline numbers come from a simulated environment. A real-LLM run with the included harness is the next step before claiming effect sizes.
-- **Lexical default embedder.** Semantic providers are wired in but were not evaluated here, because no API keys or network were available.
-- **Brute-force hybrid scoring.** The query scores every visible row, which is fine at thousands of experiences. At larger scale, restrict candidates via the HNSW index first.
-- **Almost no cross-role knowledge transfer is exercised**, because the benchmark's task families are role-specific.
-- **No rate limiting or key expiry.** A leaked key works until an admin revokes it.
-- **No `LICENSE` file is included yet.**
+---
+
+## Deployment
+
+The local stack mirrors managed AWS services, so the same code runs in both places:
+
+| Local | AWS |
+| :--- | :--- |
+| `pgvector/pgvector:pg16` container | Amazon RDS for PostgreSQL 16 with the `vector` extension |
+| LocalStack SQS | Amazon SQS (add a dead-letter queue with a redrive policy) |
+| `make api` / `make worker` | Two services (e.g. ECS Fargate): `uvicorn actioncloud.api:app` and `python -m actioncloud.worker` |
+
+Apply the schema with the files in `sql/` in order (`001` → `003`). All migrations after `001` are idempotent (`make migrate` locally).
+
+**Production checklist**
+
+- [ ] Set `ACTIONCLOUD_ADMIN_KEY` from a secret store, and keep `AUTH_REQUIRED=true`
+- [ ] Terminate TLS in front of the API; keys are bearer credentials
+- [ ] Unset `AWS_ENDPOINT_URL` and give the worker an IAM role scoped to the queue
+- [ ] Configure an SQS dead-letter queue
+- [ ] Choose an embedding provider, then run `make calibrate` and set `MEMORY_SIMILARITY_THRESHOLD`
+- [ ] Put `/health` behind your load balancer's health check
+
+A Dockerfile and infrastructure-as-code are not included yet.
+
+---
+
+## Evaluation
+
+The harness runs 136 tasks in 45 task families across all 12 roles, for 3 epochs (408 tasks per configuration) and 5 seeds.
+- **Grading:** every task has a ground-truth procedure, and the same verifier grades every configuration.
+- **Isolation:** each configuration has its own run scope, so none can read another's memories.
+
+| Configuration | Success | Flawed memories injected | Tokens / task | Cost / success |
+| :--- | ---: | ---: | ---: | ---: |
+| No memory | 65.0 % | — | 928 | $0.0198 |
+| Shared memory, no governance | 75.4 % | 27.7 % | 608 | $0.0089 |
+| **ActionCloud** | **86.8 %** | **4.4 %** | **591** | **$0.0075** |
+
+**Ablations:**
+- **Injecting 1 memory beats 5.** At k=5, retrieval precision falls from 95 % to 57 % with no gain in success.
+- **The relevance threshold helps.** Always injecting the top hit costs 2.5 points of success.
+- **Governance depends on observable outcomes.** With 30 / 70 / 100 % of outcomes observed, flawed injections are 12.3 / 4.4 / 0.0 %.
+
+Full tables are in [`results/RESULTS.md`](results/RESULTS.md).
+
+> **Read this before quoting the numbers.** These results come from a **simulated agent environment** (`LLM_PROVIDER=sim`), not a real LLM. How much a correct memory helps an agent is a stated *assumption* of the simulator (`benchmark/simulator.py`), not a finding. What the simulation does measure is everything ActionCloud controls: whether the right memory is retrieved, what the context costs in tokens, and how often flawed memories get through. To test with a real model, run the same harness with `LLM_PROVIDER=anthropic|gemini|groq`; the verifier and metrics are unchanged.
+
+**Reproduce:**
+
+```bash
+make experiment     # all presets, 5 seeds -> results/   (~10 min, needs only Postgres)
+make fleet          # 12-role fleet, one agent per task
+make calibrate      # retrieval threshold calibration
+```
+
+---
+
+## Development
+
+```bash
+make test       # 101 tests; database tests skip cleanly if Postgres is down
+make verify     # end-to-end check against a running API (make api)
+make mcp        # run the MCP server on stdio
+make migrate    # apply sql/002+ to an existing database
+```
+
+```
+src/actioncloud/
+  api.py           REST API and authentication
+  mcp_server.py    MCP stdio server
+  service.py       MemoryService: shared by REST, MCP and the in-process client
+  pipeline.py      Ingest: initial tier → extraction → embedding → one transaction
+  builder.py       Context builder: threshold, trust ranking, dedupe, token budget
+  judge.py         Memory Judge: tiers, confidence, quarantine (pure functions)
+  db.py            SQL, visibility rules, atomic reuse accounting
+  auth.py          Agent registry and API keys (also a CLI)
+  embeddings.py    hashing / Gemini / OpenAI embedders
+  worker.py        SQS consumer
+  benchmark/       Tasks, ground-truth procedures, verifier, simulator, harness
+sql/               Schema and migrations
+scripts/           Experiments, calibration, end-to-end checks
+tests/             Unit, integration, API-attack and evaluation tests
+results/           The evaluation run cited above
+```
+
+---
+
+## Security
+
+- **API keys:** 256-bit random tokens. Only their SHA-256 hash is stored. Keys are compared by hash lookup; the admin key uses a constant-time comparison.
+- **Identity:** always taken from the key. `tests/test_auth.py` exercises each attack this prevents: impersonation, reading another agent's private memories, self-promotion through a second identity, and report flooding.
+- **Hidden records:** an agent asking for a memory it cannot see gets `404`, not `403`, so the response doesn't confirm the memory exists.
+- **SQL:** every query is parameterised.
+- **MCP boundary:** the MCP stdio server holds database credentials itself. It binds one identity for honest clients; the REST API is the security boundary.
+
+## Limitations and roadmap
+
+- **Real-LLM evaluation:** the headline results are simulated. The harness supports real providers; rate limiting and resumable runs are next.
+- **Semantic embeddings:** the default embedder is lexical. The Gemini and OpenAI providers are implemented but not yet evaluated.
+- **Cross-role transfer:** it is lightly exercised, because the benchmark's task families are mostly role-specific.
+- **Scale:** hybrid scoring currently scans all visible rows. Beyond roughly 10⁵ memories, candidates should be pre-filtered with the HNSW index.
+- **Keys:** there is no rate limiting or key expiry; a leaked key works until it is revoked.
+- **Packaging:** no Dockerfile, CI pipeline or license file yet.
