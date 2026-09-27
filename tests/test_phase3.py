@@ -57,7 +57,7 @@ class TestBenchmarkDataset:
 
 
 class TestMetricCalculator:
-    def test_calculate_run_metrics_structure(self):
+    def test_calculate_run_metrics_structure(self, database):
         metrics = MetricCalculator.calculate_run_metrics(run_id="nonexistent-run-id")
         assert "systems" in metrics
         assert "comparative_metrics" in metrics

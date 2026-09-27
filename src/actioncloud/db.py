@@ -516,10 +516,24 @@ def count_experiences(run_id: str | None = None) -> int:
         return cur.fetchone()["n"]
 
 
-def health_check() -> bool:
+def health_check(timeout_s: int = 3) -> bool:
+    """
+    Direct connection with a short timeout — deliberately NOT via the pool,
+    whose 30 s wait made every "is Postgres up?" check hang when it wasn't.
+    """
     try:
-        with get_conn() as conn, conn.cursor() as cur:
-            cur.execute("SELECT 1")
-            return cur.fetchone() is not None
+        with psycopg.connect(settings.dsn, connect_timeout=timeout_s) as conn:
+            return conn.execute("SELECT 1").fetchone() is not None
     except Exception:
         return False
+
+
+def require_database() -> None:
+    """Exit with a clear message instead of a 30 s pool timeout traceback."""
+    if not health_check():
+        import sys  # noqa: PLC0415
+        target = settings.dsn.rsplit("@", 1)[-1]
+        sys.exit(
+            f"Postgres is not reachable at {target}.\n"
+            "Start Docker Desktop, then run `make up` (and `make migrate` for an old volume)."
+        )

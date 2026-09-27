@@ -100,6 +100,8 @@ def main() -> int:
     args = ap.parse_args()
 
     logging.basicConfig(level=logging.WARNING)
+    from actioncloud.db import require_database  # noqa: PLC0415
+    require_database()
     seeds = [int(s) for s in args.seeds.split(",")]
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)

@@ -55,6 +55,8 @@ def main() -> int:
     args = ap.parse_args()
     logging.basicConfig(level=logging.WARNING)
 
+    from actioncloud.db import require_database  # noqa: PLC0415
+    require_database()
     exp_id = f"fleet-{uuid.uuid4().hex[:8]}"
     wl = Workload(epochs=args.epochs, agents_per_role=UNIQUE, seed=args.seed)
     factory = (lambda s: SimulatedAgentLLM(seed=s)) if args.provider == "sim" else (lambda s: get_llm(args.provider))

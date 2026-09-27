@@ -23,7 +23,7 @@ class TestActionCloudMCPServer:
         res = server.handle_call_tool("invalid_tool_name", {})
         assert "Unknown tool" in res
 
-    def test_get_memory_metrics_tool_call(self):
+    def test_get_memory_metrics_tool_call(self, database):
         server = ActionCloudMCPServer()
         res = server.handle_call_tool("get_memory_metrics", {})
         parsed = json.loads(res)
