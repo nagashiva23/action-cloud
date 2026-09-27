@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import uuid
 from contextlib import contextmanager
-from typing import Any, Iterator, Optional
+import json
+from typing import Any, Callable, Iterator, Optional
 
 import psycopg
 from psycopg.rows import dict_row
@@ -12,6 +13,11 @@ from .config import settings
 from .schema import Experience, MemoryTier
 
 _pool: Optional[ConnectionPool] = None
+
+
+def _vec(v: list[float]) -> str:
+    """pgvector text literal."""
+    return "[" + ",".join(f"{x:.6f}" for x in v) + "]"
 
 
 def get_pool() -> ConnectionPool:
@@ -69,9 +75,8 @@ RETURNING id;
 """
 
 
-def insert_experience(exp: Experience) -> uuid.UUID:
-    """Persist an experience. Safe to call twice with the same id."""
-    params = {
+def _insert_params(exp: Experience) -> dict[str, Any]:
+    return {
         "id": exp.id,
         "schema_version": exp.schema_version,
         "agent_id": exp.agent_id,
@@ -96,12 +101,157 @@ def insert_experience(exp: Experience) -> uuid.UUID:
         "tier": exp.tier.value,
         "confidence": exp.confidence,
     }
+
+
+def insert_experience(exp: Experience) -> uuid.UUID:
+    """Persist an experience. Safe to call twice with the same id."""
     with get_conn() as conn:
         with conn.cursor() as cur:
-            cur.execute(INSERT_SQL, params)
+            cur.execute(INSERT_SQL, _insert_params(exp))
             row = cur.fetchone()
         conn.commit()
     return exp.id if row is None else row["id"]
+
+
+def insert_enriched_experience(
+    exp: Experience,
+    workflow: dict | None,
+    knowledge_triples: list[dict],
+    embedding: list[float] | None,
+    tier_reason: str,
+    decided_by: str,
+) -> bool:
+    """
+    Insert an experience together with its extraction, embedding and the
+    initial-tier audit row, in ONE transaction.
+
+    Returns False when the id already existed (an SQS redelivery): nothing is
+    written, so a duplicate message cannot duplicate the audit trail either.
+    """
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(INSERT_SQL, _insert_params(exp))
+            if cur.fetchone() is None:
+                conn.rollback()
+                return False
+            cur.execute(
+                """
+                UPDATE experiences
+                SET workflow = %s::jsonb,
+                    knowledge_triples = %s::jsonb,
+                    embedding = %s::vector,
+                    embedded = %s
+                WHERE id = %s
+                """,
+                (
+                    json.dumps(workflow) if workflow else None,
+                    json.dumps(knowledge_triples),
+                    _vec(embedding) if embedding else None,
+                    embedding is not None,
+                    exp.id,
+                ),
+            )
+            cur.execute(
+                """
+                INSERT INTO tier_transitions
+                    (experience_id, from_tier, to_tier, reason, decided_by)
+                VALUES (%s, NULL, %s, %s, %s)
+                """,
+                (exp.id, exp.tier.value, tier_reason, decided_by),
+            )
+        conn.commit()
+    return True
+
+
+def apply_reuse(
+    experience_id: uuid.UUID,
+    success: bool,
+    reporter_agent_id: str,
+    decide: Callable[[MemoryTier, float, int, int], Optional[tuple]],
+    decided_by: str,
+    confidence_fn: Optional[Callable[[int, int], float]] = None,
+) -> Optional[dict[str, Any]]:
+    """
+    Record one reuse outcome and apply the Judge's decision atomically.
+
+    The row is locked (SELECT ... FOR UPDATE) for the whole read-decide-write,
+    so concurrent reports serialise instead of racing on stale counts.
+    Positive self-reports (reporter == author, success) are logged in
+    reuse_events but not counted; negative self-reports are counted.
+    """
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT * FROM experiences WHERE id = %s FOR UPDATE", (experience_id,)
+            )
+            row = cur.fetchone()
+            if row is None:
+                conn.rollback()
+                return None
+
+            # Self-reports can only ever count AGAINST a memory: an author
+            # admitting its own solution failed downstream is valid evidence,
+            # an author vouching for itself is not.
+            counted = reporter_agent_id != row["agent_id"] or not success
+            cur.execute(
+                """
+                INSERT INTO reuse_events (experience_id, reporter_agent_id, success, counted)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (experience_id, reporter_agent_id, success, counted),
+            )
+            if counted:
+                cur.execute(
+                    """
+                    UPDATE experiences
+                    SET reuse_count = reuse_count + 1,
+                        reuse_success_count = reuse_success_count + %s
+                    WHERE id = %s
+                    RETURNING *
+                    """,
+                    (1 if success else 0, experience_id),
+                )
+                row = cur.fetchone()
+
+            transition = None
+            if counted and confidence_fn is not None:
+                conf = confidence_fn(int(row["reuse_success_count"]), int(row["reuse_count"]))
+                cur.execute(
+                    "UPDATE experiences SET confidence = %s WHERE id = %s",
+                    (conf, experience_id),
+                )
+                row["confidence"] = conf
+            if counted:
+                decision = decide(
+                    MemoryTier(row["tier"]),
+                    float(row["confidence"]),
+                    int(row["reuse_count"]),
+                    int(row["reuse_success_count"]),
+                )
+                if decision is not None:
+                    new_tier, new_conf, reason = decision
+                    cur.execute(
+                        """
+                        UPDATE experiences SET tier = %s::memory_tier, confidence = %s
+                        WHERE id = %s
+                        """,
+                        (new_tier.value, new_conf, experience_id),
+                    )
+                    cur.execute(
+                        """
+                        INSERT INTO tier_transitions
+                            (experience_id, from_tier, to_tier, reason, decided_by)
+                        VALUES (%s, %s, %s, %s, %s)
+                        """,
+                        (experience_id, row["tier"], new_tier.value, reason, decided_by),
+                    )
+                    transition = {"from": row["tier"], "to": new_tier.value, "reason": reason}
+                    row["tier"] = new_tier.value
+                    row["confidence"] = new_conf
+        conn.commit()
+
+    row.pop("embedding", None)
+    return {"row": row, "counted": counted, "transition": transition}
 
 
 def record_tier_transition(
@@ -193,7 +343,6 @@ def update_experience_extractions(
     embedded: bool = True,
 ) -> None:
     """Save extracted workflow, knowledge triples, and embedding vector."""
-    import json
     with get_conn() as conn:
         with conn.cursor() as cur:
             if embedding:
@@ -210,7 +359,7 @@ def update_experience_extractions(
                     (
                         json.dumps(workflow) if workflow else None,
                         json.dumps(knowledge_triples),
-                        str(embedding),
+                        _vec(embedding),
                         embedded,
                         experience_id,
                     ),
@@ -245,63 +394,81 @@ def get_experience(experience_id: uuid.UUID) -> Optional[dict[str, Any]]:
         return cur.fetchone()
 
 
+_DOC = """to_tsvector('english',
+        coalesce(e.task, '') || ' ' || coalesce(e.problem, '') || ' ' ||
+        coalesce(e.solution, '') || ' ' || coalesce(e.result, ''))"""
+
+# Who may read what. Mirrors MemoryTier.is_visible_to():
+#   PRIVATE -> author only; AGENT -> author + same role; SHARED+ -> everyone.
+# A caller with no identity sees fleet-visible (SHARED+) memories only.
+VISIBILITY_SQL = """
+    (
+        e.tier >= 'shared'::memory_tier
+        OR (%(agent_id)s::text IS NOT NULL AND e.agent_id = %(agent_id)s::text)
+        OR (e.tier = 'agent'::memory_tier
+            AND %(agent_role)s::text IS NOT NULL
+            AND e.agent_role::text = %(agent_role)s::text)
+    )
+"""
+
+_COMMON_FILTERS = f"""
+      e.superseded_by IS NULL
+  AND e.tier >= %(min_tier)s::memory_tier
+  AND (%(scope_run_id)s::text IS NULL OR e.run_id = %(scope_run_id)s::text)
+  AND {VISIBILITY_SQL}
+"""
+
 # Phase 1 retrieval: Postgres full-text search, ranked by ts_rank.
-SEARCH_SQL = """
-SELECT *,
-       ts_rank(
-           to_tsvector('english',
-               coalesce(task, '') || ' ' || coalesce(problem, '') || ' ' ||
-               coalesce(solution, '') || ' ' || coalesce(result, '')),
-           plainto_tsquery('english', %(query)s)
-       ) AS relevance
-FROM experiences
-WHERE to_tsvector('english',
-          coalesce(task, '') || ' ' || coalesce(problem, '') || ' ' ||
-          coalesce(solution, '') || ' ' || coalesce(result, ''))
-      @@ plainto_tsquery('english', %(query)s)
-  AND superseded_by IS NULL
-  AND tier >= %(min_tier)s::memory_tier
-  AND (%(agent_id)s::text IS NULL OR tier > 'private'::memory_tier OR agent_id = %(agent_id)s)
+SEARCH_SQL = f"""
+SELECT e.*,
+       0.0::float8 AS vec_score,
+       ts_rank({_DOC}, plainto_tsquery('english', %(query)s), 32)::float8 AS fts_score,
+       ts_rank({_DOC}, plainto_tsquery('english', %(query)s), 32)::float8 AS relevance
+FROM experiences e
+WHERE {_DOC} @@ plainto_tsquery('english', %(query)s)
+  AND {_COMMON_FILTERS}
+ORDER BY relevance DESC, e.created_at DESC
+LIMIT %(limit)s;
+"""
+
+# Hybrid retrieval. Cosine similarity is the primary signal; normalised
+# ts_rank (flag 32 => rank/(rank+1), in [0,1)) adds a bounded keyword bonus.
+# Both terms are on comparable scales, so `relevance` can be thresholded.
+FTS_WEIGHT = 0.15
+
+HYBRID_SEARCH_SQL = f"""
+WITH scored AS (
+    SELECT e.*,
+           CASE WHEN e.embedding IS NULL THEN 0.0
+                ELSE 1 - (e.embedding <=> %(vector)s::vector) END::float8 AS vec_score,
+           ts_rank({_DOC}, plainto_tsquery('english', %(query)s), 32)::float8 AS fts_score
+    FROM experiences e
+    WHERE {_COMMON_FILTERS}
+)
+SELECT *, (vec_score + {FTS_WEIGHT} * fts_score) AS relevance
+FROM scored
+WHERE vec_score > 0 OR fts_score > 0
 ORDER BY relevance DESC, created_at DESC
 LIMIT %(limit)s;
 """
 
 
-HYBRID_SEARCH_SQL = """
-WITH fts_results AS (
-    SELECT id,
-           ts_rank(
-               to_tsvector('english',
-                   coalesce(task, '') || ' ' || coalesce(problem, '') || ' ' ||
-                   coalesce(solution, '') || ' ' || coalesce(result, '')),
-               plainto_tsquery('english', %(query)s)
-           ) AS fts_score
-    FROM experiences
-    WHERE to_tsvector('english',
-              coalesce(task, '') || ' ' || coalesce(problem, '') || ' ' ||
-              coalesce(solution, '') || ' ' || coalesce(result, ''))
-          @@ plainto_tsquery('english', %(query)s)
-),
-vector_results AS (
-    SELECT id,
-           (1 - (embedding <=> %(vector)s::vector)) AS vec_score
-    FROM experiences
-    WHERE embedding IS NOT NULL
-)
-SELECT e.*,
-       COALESCE(f.fts_score, 0.0) AS fts_score,
-       COALESCE(v.vec_score, 0.0) AS vec_score,
-       (COALESCE(f.fts_score, 0.0) + 0.5 * COALESCE(v.vec_score, 0.0)) AS relevance
-FROM experiences e
-LEFT JOIN fts_results f ON e.id = f.id
-LEFT JOIN vector_results v ON e.id = v.id
-WHERE e.superseded_by IS NULL
-  AND e.tier >= %(min_tier)s::memory_tier
-  AND (%(agent_id)s::text IS NULL OR e.tier > 'private'::memory_tier OR e.agent_id = %(agent_id)s)
-  AND (f.id IS NOT NULL OR v.id IS NOT NULL)
-ORDER BY relevance DESC, e.created_at DESC
-LIMIT %(limit)s;
-"""
+def _params(query, limit, min_tier, agent_id, agent_role, scope_run_id, vector=None):
+    return {
+        "query": query,
+        "vector": _vec(vector) if vector else None,
+        "limit": limit,
+        "min_tier": min_tier.value,
+        "agent_id": agent_id,
+        "agent_role": agent_role.value if hasattr(agent_role, "value") else agent_role,
+        "scope_run_id": scope_run_id,
+    }
+
+
+def _strip(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    for r in rows:
+        r.pop("embedding", None)
+    return rows
 
 
 def search_experiences(
@@ -309,21 +476,15 @@ def search_experiences(
     limit: int = 5,
     min_tier: MemoryTier = MemoryTier.PRIVATE,
     agent_id: str | None = None,
+    agent_role: Any = None,
+    scope_run_id: str | None = None,
 ) -> list[dict[str, Any]]:
-    """
-    Naive keyword search over stored experiences.
-    """
+    """Keyword-only search (used when no query vector is available)."""
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute(
-            SEARCH_SQL,
-            {
-                "query": query,
-                "limit": limit,
-                "min_tier": min_tier.value,
-                "agent_id": agent_id,
-            },
+            SEARCH_SQL, _params(query, limit, min_tier, agent_id, agent_role, scope_run_id)
         )
-        return cur.fetchall()
+        return _strip(cur.fetchall())
 
 
 def hybrid_search_experiences(
@@ -332,29 +493,18 @@ def hybrid_search_experiences(
     limit: int = 5,
     min_tier: MemoryTier = MemoryTier.PRIVATE,
     agent_id: str | None = None,
+    agent_role: Any = None,
+    scope_run_id: str | None = None,
 ) -> list[dict[str, Any]]:
-    """
-    Phase 2 hybrid retrieval: combines vector similarity (pgvector) and full-text ranking.
-    Falls back to text search if query_vector is None.
-    """
+    """Hybrid vector + keyword retrieval under the visibility rules above."""
     if not query_vector:
-        return search_experiences(query, limit=limit, min_tier=min_tier, agent_id=agent_id)
-
+        return search_experiences(query, limit, min_tier, agent_id, agent_role, scope_run_id)
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute(
             HYBRID_SEARCH_SQL,
-            {
-                "query": query,
-                "vector": str(query_vector),
-                "limit": limit,
-                "min_tier": min_tier.value,
-                "agent_id": agent_id,
-            },
+            _params(query, limit, min_tier, agent_id, agent_role, scope_run_id, query_vector),
         )
-        results = cur.fetchall()
-        if not results:  # Fallback to plain keyword search if hybrid returns empty
-            return search_experiences(query, limit=limit, min_tier=min_tier, agent_id=agent_id)
-        return results
+        return _strip(cur.fetchall())
 
 
 def count_experiences(run_id: str | None = None) -> int:
@@ -373,4 +523,3 @@ def health_check() -> bool:
             return cur.fetchone() is not None
     except Exception:
         return False
-

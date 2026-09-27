@@ -1,16 +1,77 @@
+"""
+ActionCloud — Memory Judge.
+
+The Judge is a *pure decision function*: given an experience's governance
+state it says which tier the experience belongs in and why. It never touches
+the database. `db.apply_reuse` calls it inside the same transaction (and row
+lock) that increments the reuse counters, so two concurrent reuse reports can
+never both read stale counts and double-apply a transition.
+
+Ladder (see README):
+    PRIVATE -> AGENT -> SHARED -> VALIDATED -> ORGANIZATIONAL
+
+  * Successful experience enters at AGENT (visible to agents of the same role).
+    ("Successful" is the agent's own self-assessment at write time.)
+  * Failed experience enters at PRIVATE (visible only to its author).
+  * AGENT  -> SHARED          after >= 1 counted successful reuse.
+  * SHARED -> VALIDATED       after >= 3 counted reuses at >= 80 % success.
+  * VALIDATED -> ORGANIZATIONAL after >= 10 counted reuses at >= 90 % success.
+  * Any tier above PRIVATE -> PRIVATE (quarantine) when >= 3 counted reuses
+    fall below 40 % success. Quarantine is terminal for automatic governance:
+    only the author can still see the memory, and the author's own reuse
+    reports are never counted, so it cannot climb back without a human.
+
+"Counted" outcome reports exclude POSITIVE self-reports (reporter == author,
+success). Without that rule an agent could promote its own memory fleet-wide
+by vouching for it once. NEGATIVE self-reports do count: an author learning
+downstream (tests, CI, a failed deploy) that its own solution was wrong is
+exactly the evidence governance needs, and it stops the memory spreading
+before anyone else is misled by it.
+
+Confidence is a running estimate of "will this memory work if reused?",
+updated on EVERY counted reuse (not only on tier changes):
+
+    confidence = (successes + PRIOR_WEIGHT * prior) / (reuses + PRIOR_WEIGHT)
+
+i.e. the posterior mean of a Beta prior centred on the initial confidence.
+Retrieval skips memories below MemorySelectionPolicy.min_confidence, so a
+memory that fails its first reuses stops being injected immediately, long
+before it has enough evidence to be formally quarantined.
+"""
+
 from __future__ import annotations
 
 import logging
-import uuid
+from dataclasses import dataclass
 from typing import Optional, Tuple
 
-from . import db
 from .schema import Experience, MemoryTier
 
 log = logging.getLogger(__name__)
 
+DECIDED_BY = "memory_judge_v3"
+
+PRIOR_WEIGHT = 2.0
+DEFAULT_PRIOR = 0.6
+
+
+@dataclass(frozen=True)
+class JudgeThresholds:
+    shared_min_successes: int = 1
+    validated_min_reuses: int = 3
+    validated_min_rate: float = 0.80
+    org_min_reuses: int = 10
+    org_min_rate: float = 0.90
+    demote_min_reuses: int = 3
+    demote_max_rate: float = 0.40
+
+
+DEFAULT_THRESHOLDS = JudgeThresholds()
+
 
 class MemoryJudge:
+    thresholds: JudgeThresholds = DEFAULT_THRESHOLDS
+
     @staticmethod
     def assign_initial_tier(exp: Experience) -> Tuple[MemoryTier, float, str]:
         if not exp.success:
@@ -19,90 +80,77 @@ class MemoryJudge:
                 0.3,
                 "Initial creation: failed experiences remain private",
             )
-
         confidence = 0.6 if exp.solution else 0.5
         tier = MemoryTier.AGENT
         return tier, confidence, f"Initial creation: assigned {tier.value} tier"
 
     @staticmethod
-    def evaluate_reuse(
-        exp_dict: dict,
+    def posterior_confidence(successes: int, reuses: int, prior: float = DEFAULT_PRIOR) -> float:
+        return round((successes + PRIOR_WEIGHT * prior) / (reuses + PRIOR_WEIGHT), 4)
+
+    @classmethod
+    def decide(
+        cls,
+        tier: MemoryTier,
+        confidence: float,
+        reuse_count: int,
+        reuse_success_count: int,
     ) -> Optional[Tuple[MemoryTier, float, str]]:
         """
-        Evaluate an existing experience after a reuse event.
-
-        Returns (new_tier, new_confidence, reason) if a tier change occurs,
-        or None if tier remains unchanged.
+        Pure tier decision. Returns (new_tier, new_confidence, reason) when the
+        tier should change, otherwise None. (Confidence is updated separately
+        on every counted reuse via posterior_confidence.)
         """
-        exp_id = uuid.UUID(str(exp_dict["id"]))
-        current_tier = MemoryTier(exp_dict["tier"])
-        current_confidence = float(exp_dict["confidence"])
-        reuse_count = int(exp_dict["reuse_count"])
-        reuse_success_count = int(exp_dict["reuse_success_count"])
-
+        th = cls.thresholds
         if reuse_count <= 0:
             return None
+        rate = reuse_success_count / reuse_count
+        conf = cls.posterior_confidence(reuse_success_count, reuse_count)
 
-        success_rate = reuse_success_count / reuse_count
-        new_tier = current_tier
-        new_confidence = current_confidence
-        reason = ""
-
-        # Demotion check (applies if reused at least 3 times with low success)
-        if reuse_count >= 3 and success_rate < 0.4:
-            if current_tier.rank > MemoryTier.PRIVATE.rank:
-                new_tier = MemoryTier.PRIVATE
-                new_confidence = max(0.1, current_confidence - 0.3)
-                reason = (
-                    f"Demoted to private: reuse success rate dropped to "
-                    f"{success_rate:.1%} ({reuse_success_count}/{reuse_count})"
+        if reuse_count >= th.demote_min_reuses and rate < th.demote_max_rate:
+            if tier.rank > MemoryTier.PRIVATE.rank:
+                return (
+                    MemoryTier.PRIVATE,
+                    conf,
+                    f"Quarantined to private: reuse success rate {rate:.1%} "
+                    f"({reuse_success_count}/{reuse_count}) below {th.demote_max_rate:.0%}",
                 )
+            return None
 
-        # Promotion checks
-        elif current_tier == MemoryTier.AGENT:
-            # Promote to SHARED after 1 successful reuse
-            if reuse_success_count >= 1:
-                new_tier = MemoryTier.SHARED
-                new_confidence = 0.7
-                reason = "Promoted to shared: proven by initial successful reuse"
-
-        elif current_tier == MemoryTier.SHARED:
-            # Promote to VALIDATED after >= 3 reuses with >= 80% success
-            if reuse_count >= 3 and success_rate >= 0.8:
-                new_tier = MemoryTier.VALIDATED
-                new_confidence = 0.85
-                reason = (
-                    f"Promoted to validated: {reuse_count} reuses with "
-                    f"{success_rate:.1%} success rate"
-                )
-
-        elif current_tier == MemoryTier.VALIDATED:
-            # Promote to ORGANIZATIONAL after >= 10 reuses with >= 90% success
-            if reuse_count >= 10 and success_rate >= 0.9:
-                new_tier = MemoryTier.ORGANIZATIONAL
-                new_confidence = 0.95
-                reason = (
-                    f"Promoted to organizational canonical knowledge: "
-                    f"{reuse_count} reuses with {success_rate:.1%} success rate"
-                )
-
-        if new_tier != current_tier:
-            log.info(
-                "MemoryJudge: transition %s -> %s for experience %s (%s)",
-                current_tier.value,
-                new_tier.value,
-                exp_id,
-                reason,
+        if tier == MemoryTier.AGENT and reuse_success_count >= th.shared_min_successes:
+            return (
+                MemoryTier.SHARED,
+                conf,
+                "Promoted to shared: successful reuse by another agent",
             )
-            # Update database record & audit log
-            db.update_experience_tier(exp_id, new_tier, new_confidence)
-            db.record_tier_transition(
-                experience_id=exp_id,
-                to_tier=new_tier,
-                reason=reason,
-                from_tier=current_tier,
-                decided_by="memory_judge_v2",
+        if (
+            tier == MemoryTier.SHARED
+            and reuse_count >= th.validated_min_reuses
+            and rate >= th.validated_min_rate
+        ):
+            return (
+                MemoryTier.VALIDATED,
+                conf,
+                f"Promoted to validated: {reuse_count} reuses at {rate:.1%} success",
             )
-            return new_tier, new_confidence, reason
-
+        if (
+            tier == MemoryTier.VALIDATED
+            and reuse_count >= th.org_min_reuses
+            and rate >= th.org_min_rate
+        ):
+            return (
+                MemoryTier.ORGANIZATIONAL,
+                conf,
+                f"Promoted to organizational: {reuse_count} reuses at {rate:.1%} success",
+            )
         return None
+
+    @classmethod
+    def evaluate_reuse(cls, exp_dict: dict) -> Optional[Tuple[MemoryTier, float, str]]:
+        """Backward-compatible wrapper: decide from a row dict (no side effects)."""
+        return cls.decide(
+            MemoryTier(exp_dict["tier"]),
+            float(exp_dict["confidence"]),
+            int(exp_dict["reuse_count"]),
+            int(exp_dict["reuse_success_count"]),
+        )

@@ -1,0 +1,1496 @@
+{
+ "experiment_id": "exp-ec245d71",
+ "provider": "sim",
+ "seeds": [
+  1,
+  2,
+  3,
+  4,
+  5
+ ],
+ "workload": {
+  "epochs": 3,
+  "agents_per_role": 3,
+  "tasks_per_epoch": 136
+ },
+ "arms": [
+  {
+   "name": "baseline",
+   "use_memory": false,
+   "governance": true,
+   "k_inject": 1,
+   "similarity_threshold": 0.3,
+   "candidate_k": 10,
+   "token_budget": 1000,
+   "feedback_rate": 0.7
+  },
+  {
+   "name": "k1",
+   "use_memory": true,
+   "governance": true,
+   "k_inject": 1,
+   "similarity_threshold": 0.3,
+   "candidate_k": 10,
+   "token_budget": 1000,
+   "feedback_rate": 0.7
+  },
+  {
+   "name": "k2",
+   "use_memory": true,
+   "governance": true,
+   "k_inject": 2,
+   "similarity_threshold": 0.3,
+   "candidate_k": 10,
+   "token_budget": 1000,
+   "feedback_rate": 0.7
+  },
+  {
+   "name": "k3",
+   "use_memory": true,
+   "governance": true,
+   "k_inject": 3,
+   "similarity_threshold": 0.3,
+   "candidate_k": 10,
+   "token_budget": 1000,
+   "feedback_rate": 0.7
+  },
+  {
+   "name": "k5",
+   "use_memory": true,
+   "governance": true,
+   "k_inject": 5,
+   "similarity_threshold": 0.3,
+   "candidate_k": 10,
+   "token_budget": 1000,
+   "feedback_rate": 0.7
+  }
+ ],
+ "summary": {
+  "baseline": {
+   "success_rate_pct": {
+    "mean": 64.952,
+    "sd": 2.8735
+   },
+   "injection_rate_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   },
+   "retrieval_precision_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   },
+   "effective_reuse_rate_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   },
+   "misled_rate_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   },
+   "redundancy_index": {
+    "mean": 1.0,
+    "sd": 0.0
+   },
+   "poisoned_injection_pct": {
+    "mean": 0.0,
+    "sd": 0.0
+   },
+   "avg_tokens_per_task": {
+    "mean": 928.48,
+    "sd": 4.2938
+   },
+   "avg_context_tokens": {
+    "mean": 0.0,
+    "sd": 0.0
+   },
+   "avg_latency_ms": {
+    "mean": 7014.46,
+    "sd": 34.406
+   },
+   "total_tokens": {
+    "mean": 378820.2,
+    "sd": 1754.5221
+   },
+   "total_cost_usd": {
+    "mean": 5.2457,
+    "sd": 0.0263
+   },
+   "cost_per_success_usd": {
+    "mean": 0.0198,
+    "sd": 0.0009
+   },
+   "false_positive_memories": {
+    "mean": 86,
+    "sd": 2.1213
+   }
+  },
+  "k1": {
+   "success_rate_pct": {
+    "mean": 86.764,
+    "sd": 1.0679
+   },
+   "injection_rate_pct": {
+    "mean": 84.412,
+    "sd": 1.5642
+   },
+   "retrieval_precision_pct": {
+    "mean": 95.022,
+    "sd": 1.0553
+   },
+   "effective_reuse_rate_pct": {
+    "mean": 74.508,
+    "sd": 0.8868
+   },
+   "misled_rate_pct": {
+    "mean": 7.086,
+    "sd": 1.2299
+   },
+   "redundancy_index": {
+    "mean": 0.0292,
+    "sd": 0.006
+   },
+   "poisoned_injection_pct": {
+    "mean": 4.398,
+    "sd": 1.0476
+   },
+   "avg_tokens_per_task": {
+    "mean": 590.98,
+    "sd": 5.1217
+   },
+   "avg_context_tokens": {
+    "mean": 106.56,
+    "sd": 2.002
+   },
+   "avg_latency_ms": {
+    "mean": 3465.98,
+    "sd": 43.5742
+   },
+   "total_tokens": {
+    "mean": 241125,
+    "sd": 2092.9692
+   },
+   "total_cost_usd": {
+    "mean": 2.6548,
+    "sd": 0.0329
+   },
+   "cost_per_success_usd": {
+    "mean": 0.0075,
+    "sd": 0.0001
+   },
+   "false_positive_memories": {
+    "mean": 39,
+    "sd": 4.6368
+   }
+  },
+  "k2": {
+   "success_rate_pct": {
+    "mean": 86.764,
+    "sd": 1.365
+   },
+   "injection_rate_pct": {
+    "mean": 84.36,
+    "sd": 1.3447
+   },
+   "retrieval_precision_pct": {
+    "mean": 67.092,
+    "sd": 1.2581
+   },
+   "effective_reuse_rate_pct": {
+    "mean": 74.802,
+    "sd": 1.1309
+   },
+   "misled_rate_pct": {
+    "mean": 7.288,
+    "sd": 1.4554
+   },
+   "redundancy_index": {
+    "mean": 0.0213,
+    "sd": 0.0059
+   },
+   "poisoned_injection_pct": {
+    "mean": 4.492,
+    "sd": 1.1892
+   },
+   "avg_tokens_per_task": {
+    "mean": 622.36,
+    "sd": 6.1504
+   },
+   "avg_context_tokens": {
+    "mean": 141.04,
+    "sd": 2.1916
+   },
+   "avg_latency_ms": {
+    "mean": 3441.12,
+    "sd": 53.8338
+   },
+   "total_tokens": {
+    "mean": 253915.8,
+    "sd": 2514.224
+   },
+   "total_cost_usd": {
+    "mean": 2.6778,
+    "sd": 0.0404
+   },
+   "cost_per_success_usd": {
+    "mean": 0.0076,
+    "sd": 0.0002
+   },
+   "false_positive_memories": {
+    "mean": 39,
+    "sd": 5.244
+   }
+  },
+  "k3": {
+   "success_rate_pct": {
+    "mean": 86.864,
+    "sd": 1.4264
+   },
+   "injection_rate_pct": {
+    "mean": 84.506,
+    "sd": 1.1281
+   },
+   "retrieval_precision_pct": {
+    "mean": 59.512,
+    "sd": 1.749
+   },
+   "effective_reuse_rate_pct": {
+    "mean": 75.048,
+    "sd": 1.1687
+   },
+   "misled_rate_pct": {
+    "mean": 7.266,
+    "sd": 1.4512
+   },
+   "redundancy_index": {
+    "mean": 0.0183,
+    "sd": 0.007
+   },
+   "poisoned_injection_pct": {
+    "mean": 4.478,
+    "sd": 1.1839
+   },
+   "avg_tokens_per_task": {
+    "mean": 636.22,
+    "sd": 6.7229
+   },
+   "avg_context_tokens": {
+    "mean": 156.24,
+    "sd": 3.4631
+   },
+   "avg_latency_ms": {
+    "mean": 3430.7,
+    "sd": 54.7976
+   },
+   "total_tokens": {
+    "mean": 259588.4,
+    "sd": 2734.5184
+   },
+   "total_cost_usd": {
+    "mean": 2.6885,
+    "sd": 0.041
+   },
+   "cost_per_success_usd": {
+    "mean": 0.0076,
+    "sd": 0.0002
+   },
+   "false_positive_memories": {
+    "mean": 38.8,
+    "sd": 5.0695
+   }
+  },
+  "k5": {
+   "success_rate_pct": {
+    "mean": 86.814,
+    "sd": 1.4458
+   },
+   "injection_rate_pct": {
+    "mean": 84.506,
+    "sd": 1.1281
+   },
+   "retrieval_precision_pct": {
+    "mean": 57.042,
+    "sd": 1.5235
+   },
+   "effective_reuse_rate_pct": {
+    "mean": 75.096,
+    "sd": 1.1839
+   },
+   "misled_rate_pct": {
+    "mean": 7.372,
+    "sd": 1.4728
+   },
+   "redundancy_index": {
+    "mean": 0.0177,
+    "sd": 0.0065
+   },
+   "poisoned_injection_pct": {
+    "mean": 4.65,
+    "sd": 1.3619
+   },
+   "avg_tokens_per_task": {
+    "mean": 641.52,
+    "sd": 7.1072
+   },
+   "avg_context_tokens": {
+    "mean": 162.04,
+    "sd": 3.0402
+   },
+   "avg_latency_ms": {
+    "mean": 3426.52,
+    "sd": 55.6855
+   },
+   "total_tokens": {
+    "mean": 261744.4,
+    "sd": 2891.2489
+   },
+   "total_cost_usd": {
+    "mean": 2.6924,
+    "sd": 0.0422
+   },
+   "cost_per_success_usd": {
+    "mean": 0.0076,
+    "sd": 0.0002
+   },
+   "false_positive_memories": {
+    "mean": 39.2,
+    "sd": 5.1672
+   }
+  }
+ },
+ "vs_baseline": {
+  "k1": {
+   "token_savings_pct": {
+    "mean": 36.35,
+    "sd": 0.4
+   },
+   "cost_savings_pct": {
+    "mean": 49.39,
+    "sd": 0.5
+   },
+   "latency_reduction_pct": {
+    "mean": 50.59,
+    "sd": 0.51
+   },
+   "success_rate_delta_pp": {
+    "mean": 21.81,
+    "sd": 2.29
+   }
+  },
+  "k2": {
+   "token_savings_pct": {
+    "mean": 32.97,
+    "sd": 0.54
+   },
+   "cost_savings_pct": {
+    "mean": 48.95,
+    "sd": 0.67
+   },
+   "latency_reduction_pct": {
+    "mean": 50.94,
+    "sd": 0.67
+   },
+   "success_rate_delta_pp": {
+    "mean": 21.81,
+    "sd": 1.9
+   }
+  },
+  "k3": {
+   "token_savings_pct": {
+    "mean": 31.48,
+    "sd": 0.57
+   },
+   "cost_savings_pct": {
+    "mean": 48.75,
+    "sd": 0.63
+   },
+   "latency_reduction_pct": {
+    "mean": 51.09,
+    "sd": 0.64
+   },
+   "success_rate_delta_pp": {
+    "mean": 21.91,
+    "sd": 1.82
+   }
+  },
+  "k5": {
+   "token_savings_pct": {
+    "mean": 30.91,
+    "sd": 0.63
+   },
+   "cost_savings_pct": {
+    "mean": 48.68,
+    "sd": 0.68
+   },
+   "latency_reduction_pct": {
+    "mean": 51.15,
+    "sd": 0.68
+   },
+   "success_rate_delta_pp": {
+    "mean": 21.86,
+    "sd": 1.73
+   }
+  }
+ },
+ "runs": {
+  "baseline": [
+   {
+    "arm": {
+     "name": "baseline",
+     "use_memory": false,
+     "governance": true,
+     "k_inject": 1,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-baseline-s1",
+    "seed": 1,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 264,
+     "success_rate_pct": 64.71,
+     "injection_rate_pct": 0.0,
+     "retrieval_precision_pct": 0.0,
+     "effective_reuse_rate_pct": 0.0,
+     "misled_rate_pct": 0.0,
+     "redundancy_index": 1.0,
+     "repeat_tasks": 333,
+     "total_tokens_input": 36384,
+     "total_tokens_output": 342539,
+     "total_tokens": 378923,
+     "avg_tokens_per_task": 928.7,
+     "avg_latency_ms": 7016.5,
+     "total_cost_usd": 5.247237,
+     "cost_per_success_usd": 0.019876,
+     "poisoned_injection_pct": 0.0,
+     "false_positive_memories": 86,
+     "avg_context_tokens": 0.0,
+     "tier_distribution": {
+      "private": 58,
+      "agent": 350,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "baseline",
+     "use_memory": false,
+     "governance": true,
+     "k_inject": 1,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-baseline-s2",
+    "seed": 2,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 272,
+     "success_rate_pct": 66.67,
+     "injection_rate_pct": 0.0,
+     "retrieval_precision_pct": 0.0,
+     "effective_reuse_rate_pct": 0.0,
+     "misled_rate_pct": 0.0,
+     "redundancy_index": 1.0,
+     "repeat_tasks": 343,
+     "total_tokens_input": 36384,
+     "total_tokens_output": 342597,
+     "total_tokens": 378981,
+     "avg_tokens_per_task": 928.9,
+     "avg_latency_ms": 7017.6,
+     "total_cost_usd": 5.248107,
+     "cost_per_success_usd": 0.019295,
+     "poisoned_injection_pct": 0.0,
+     "false_positive_memories": 83,
+     "avg_context_tokens": 0.0,
+     "tier_distribution": {
+      "private": 53,
+      "agent": 355,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "baseline",
+     "use_memory": false,
+     "governance": true,
+     "k_inject": 1,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-baseline-s3",
+    "seed": 3,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 253,
+     "success_rate_pct": 62.01,
+     "injection_rate_pct": 0.0,
+     "retrieval_precision_pct": 0.0,
+     "effective_reuse_rate_pct": 0.0,
+     "misled_rate_pct": 0.0,
+     "redundancy_index": 1.0,
+     "repeat_tasks": 330,
+     "total_tokens_input": 36384,
+     "total_tokens_output": 345182,
+     "total_tokens": 381566,
+     "avg_tokens_per_task": 935.2,
+     "avg_latency_ms": 7068.3,
+     "total_cost_usd": 5.286882,
+     "cost_per_success_usd": 0.020897,
+     "poisoned_injection_pct": 0.0,
+     "false_positive_memories": 85,
+     "avg_context_tokens": 0.0,
+     "tier_distribution": {
+      "private": 70,
+      "agent": 338,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "baseline",
+     "use_memory": false,
+     "governance": true,
+     "k_inject": 1,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-baseline-s4",
+    "seed": 4,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 281,
+     "success_rate_pct": 68.87,
+     "injection_rate_pct": 0.0,
+     "retrieval_precision_pct": 0.0,
+     "effective_reuse_rate_pct": 0.0,
+     "misled_rate_pct": 0.0,
+     "redundancy_index": 1.0,
+     "repeat_tasks": 341,
+     "total_tokens_input": 36384,
+     "total_tokens_output": 341255,
+     "total_tokens": 377639,
+     "avg_tokens_per_task": 925.6,
+     "avg_latency_ms": 6991.3,
+     "total_cost_usd": 5.227977,
+     "cost_per_success_usd": 0.018605,
+     "poisoned_injection_pct": 0.0,
+     "false_positive_memories": 88,
+     "avg_context_tokens": 0.0,
+     "tier_distribution": {
+      "private": 39,
+      "agent": 369,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "baseline",
+     "use_memory": false,
+     "governance": true,
+     "k_inject": 1,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-baseline-s5",
+    "seed": 5,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 255,
+     "success_rate_pct": 62.5,
+     "injection_rate_pct": 0.0,
+     "retrieval_precision_pct": 0.0,
+     "effective_reuse_rate_pct": 0.0,
+     "misled_rate_pct": 0.0,
+     "redundancy_index": 1.0,
+     "repeat_tasks": 339,
+     "total_tokens_input": 36384,
+     "total_tokens_output": 340608,
+     "total_tokens": 376992,
+     "avg_tokens_per_task": 924.0,
+     "avg_latency_ms": 6978.6,
+     "total_cost_usd": 5.218272,
+     "cost_per_success_usd": 0.020464,
+     "poisoned_injection_pct": 0.0,
+     "false_positive_memories": 88,
+     "avg_context_tokens": 0.0,
+     "tier_distribution": {
+      "private": 65,
+      "agent": 343,
+      "quarantined": 0
+     }
+    }
+   }
+  ],
+  "k1": [
+   {
+    "arm": {
+     "name": "k1",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 1,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k1-s1",
+    "seed": 1,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 349,
+     "success_rate_pct": 85.54,
+     "injection_rate_pct": 82.11,
+     "retrieval_precision_pct": 96.72,
+     "effective_reuse_rate_pct": 73.28,
+     "misled_rate_pct": 7.72,
+     "redundancy_index": 0.0306,
+     "repeat_tasks": 327,
+     "total_tokens_input": 78914,
+     "total_tokens_output": 161888,
+     "total_tokens": 240802,
+     "avg_tokens_per_task": 590.2,
+     "avg_latency_ms": 3484.5,
+     "total_cost_usd": 2.665062,
+     "cost_per_success_usd": 0.007636,
+     "poisoned_injection_pct": 3.7,
+     "false_positive_memories": 43,
+     "avg_context_tokens": 103.5,
+     "tier_distribution": {
+      "private": 16,
+      "agent": 299,
+      "shared": 83,
+      "validated": 10,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "k1",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 1,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k1-s2",
+    "seed": 2,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 354,
+     "success_rate_pct": 86.76,
+     "injection_rate_pct": 86.03,
+     "retrieval_precision_pct": 94.02,
+     "effective_reuse_rate_pct": 74.51,
+     "misled_rate_pct": 7.88,
+     "redundancy_index": 0.0331,
+     "repeat_tasks": 332,
+     "total_tokens_input": 80999,
+     "total_tokens_output": 157921,
+     "total_tokens": 238920,
+     "avg_tokens_per_task": 585.6,
+     "avg_latency_ms": 3407.5,
+     "total_cost_usd": 2.611812,
+     "cost_per_success_usd": 0.007378,
+     "poisoned_injection_pct": 4.55,
+     "false_positive_memories": 43,
+     "avg_context_tokens": 108.6,
+     "tier_distribution": {
+      "private": 11,
+      "agent": 296,
+      "shared": 91,
+      "validated": 10,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "k1",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 1,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k1-s3",
+    "seed": 3,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 353,
+     "success_rate_pct": 86.52,
+     "injection_rate_pct": 85.29,
+     "retrieval_precision_pct": 94.54,
+     "effective_reuse_rate_pct": 74.75,
+     "misled_rate_pct": 7.29,
+     "redundancy_index": 0.0243,
+     "repeat_tasks": 329,
+     "total_tokens_input": 80576,
+     "total_tokens_output": 164028,
+     "total_tokens": 244604,
+     "avg_tokens_per_task": 599.5,
+     "avg_latency_ms": 3525.5,
+     "total_cost_usd": 2.702148,
+     "cost_per_success_usd": 0.007655,
+     "poisoned_injection_pct": 5.78,
+     "false_positive_memories": 40,
+     "avg_context_tokens": 107.5,
+     "tier_distribution": {
+      "private": 17,
+      "agent": 291,
+      "shared": 89,
+      "validated": 11,
+      "quarantined": 2
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "k1",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 1,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k1-s4",
+    "seed": 4,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 361,
+     "success_rate_pct": 88.48,
+     "injection_rate_pct": 83.58,
+     "retrieval_precision_pct": 95.31,
+     "effective_reuse_rate_pct": 75.74,
+     "misled_rate_pct": 4.92,
+     "redundancy_index": 0.0363,
+     "repeat_tasks": 331,
+     "total_tokens_input": 79833,
+     "total_tokens_output": 160810,
+     "total_tokens": 240643,
+     "avg_tokens_per_task": 589.8,
+     "avg_latency_ms": 3463.2,
+     "total_cost_usd": 2.651649,
+     "cost_per_success_usd": 0.007345,
+     "poisoned_injection_pct": 3.08,
+     "false_positive_memories": 32,
+     "avg_context_tokens": 105.7,
+     "tier_distribution": {
+      "private": 15,
+      "agent": 291,
+      "shared": 92,
+      "validated": 10,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "k1",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 1,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k1-s5",
+    "seed": 5,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 353,
+     "success_rate_pct": 86.52,
+     "injection_rate_pct": 85.05,
+     "retrieval_precision_pct": 94.52,
+     "effective_reuse_rate_pct": 74.26,
+     "misled_rate_pct": 7.62,
+     "redundancy_index": 0.0218,
+     "repeat_tasks": 321,
+     "total_tokens_input": 80550,
+     "total_tokens_output": 160106,
+     "total_tokens": 240656,
+     "avg_tokens_per_task": 589.8,
+     "avg_latency_ms": 3449.2,
+     "total_cost_usd": 2.64324,
+     "cost_per_success_usd": 0.007488,
+     "poisoned_injection_pct": 4.88,
+     "false_positive_memories": 37,
+     "avg_context_tokens": 107.5,
+     "tier_distribution": {
+      "private": 19,
+      "agent": 295,
+      "shared": 80,
+      "validated": 14,
+      "quarantined": 1
+     }
+    }
+   }
+  ],
+  "k2": [
+   {
+    "arm": {
+     "name": "k2",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 2,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k2-s1",
+    "seed": 1,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 350,
+     "success_rate_pct": 85.78,
+     "injection_rate_pct": 82.6,
+     "retrieval_precision_pct": 65.2,
+     "effective_reuse_rate_pct": 73.77,
+     "misled_rate_pct": 7.67,
+     "redundancy_index": 0.0245,
+     "repeat_tasks": 327,
+     "total_tokens_input": 94959,
+     "total_tokens_output": 160809,
+     "total_tokens": 255768,
+     "avg_tokens_per_task": 626.9,
+     "avg_latency_ms": 3463.0,
+     "total_cost_usd": 2.697012,
+     "cost_per_success_usd": 0.007706,
+     "poisoned_injection_pct": 3.68,
+     "false_positive_memories": 43,
+     "avg_context_tokens": 142.8,
+     "tier_distribution": {
+      "private": 15,
+      "agent": 296,
+      "shared": 67,
+      "validated": 29,
+      "organizational": 1,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "k2",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 2,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k2-s2",
+    "seed": 2,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 355,
+     "success_rate_pct": 87.01,
+     "injection_rate_pct": 85.78,
+     "retrieval_precision_pct": 66.73,
+     "effective_reuse_rate_pct": 75.25,
+     "misled_rate_pct": 7.81,
+     "redundancy_index": 0.0241,
+     "repeat_tasks": 332,
+     "total_tokens_input": 95217,
+     "total_tokens_output": 155606,
+     "total_tokens": 250823,
+     "avg_tokens_per_task": 614.8,
+     "avg_latency_ms": 3362.2,
+     "total_cost_usd": 2.619741,
+     "cost_per_success_usd": 0.00738,
+     "poisoned_injection_pct": 4.5,
+     "false_positive_memories": 42,
+     "avg_context_tokens": 143.4,
+     "tier_distribution": {
+      "private": 11,
+      "agent": 291,
+      "shared": 78,
+      "validated": 28,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "k2",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 2,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k2-s3",
+    "seed": 3,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 353,
+     "success_rate_pct": 86.52,
+     "injection_rate_pct": 85.29,
+     "retrieval_precision_pct": 67.56,
+     "effective_reuse_rate_pct": 74.75,
+     "misled_rate_pct": 7.29,
+     "redundancy_index": 0.0184,
+     "repeat_tasks": 326,
+     "total_tokens_input": 93785,
+     "total_tokens_output": 163215,
+     "total_tokens": 257000,
+     "avg_tokens_per_task": 629.9,
+     "avg_latency_ms": 3510.4,
+     "total_cost_usd": 2.72958,
+     "cost_per_success_usd": 0.007733,
+     "poisoned_injection_pct": 5.17,
+     "false_positive_memories": 39,
+     "avg_context_tokens": 139.9,
+     "tier_distribution": {
+      "private": 16,
+      "agent": 287,
+      "shared": 76,
+      "validated": 29,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "k2",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 2,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k2-s4",
+    "seed": 4,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 363,
+     "success_rate_pct": 88.97,
+     "injection_rate_pct": 83.33,
+     "retrieval_precision_pct": 68.62,
+     "effective_reuse_rate_pct": 76.47,
+     "misled_rate_pct": 4.88,
+     "redundancy_index": 0.0272,
+     "repeat_tasks": 331,
+     "total_tokens_input": 92994,
+     "total_tokens_output": 159266,
+     "total_tokens": 252260,
+     "avg_tokens_per_task": 618.3,
+     "avg_latency_ms": 3432.7,
+     "total_cost_usd": 2.667972,
+     "cost_per_success_usd": 0.00735,
+     "poisoned_injection_pct": 3.05,
+     "false_positive_memories": 30,
+     "avg_context_tokens": 138.0,
+     "tier_distribution": {
+      "private": 15,
+      "agent": 282,
+      "shared": 78,
+      "validated": 33,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "k2",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 2,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k2-s5",
+    "seed": 5,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 349,
+     "success_rate_pct": 85.54,
+     "injection_rate_pct": 84.8,
+     "retrieval_precision_pct": 67.35,
+     "effective_reuse_rate_pct": 73.77,
+     "misled_rate_pct": 8.79,
+     "redundancy_index": 0.0125,
+     "repeat_tasks": 319,
+     "total_tokens_input": 94272,
+     "total_tokens_output": 159456,
+     "total_tokens": 253728,
+     "avg_tokens_per_task": 621.9,
+     "avg_latency_ms": 3437.3,
+     "total_cost_usd": 2.674656,
+     "cost_per_success_usd": 0.007664,
+     "poisoned_injection_pct": 6.06,
+     "false_positive_memories": 41,
+     "avg_context_tokens": 141.1,
+     "tier_distribution": {
+      "private": 19,
+      "agent": 292,
+      "shared": 68,
+      "validated": 28,
+      "organizational": 1,
+      "quarantined": 1
+     }
+    }
+   }
+  ],
+  "k3": [
+   {
+    "arm": {
+     "name": "k3",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 3,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k3-s1",
+    "seed": 1,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 351,
+     "success_rate_pct": 86.03,
+     "injection_rate_pct": 83.33,
+     "retrieval_precision_pct": 56.77,
+     "effective_reuse_rate_pct": 74.02,
+     "misled_rate_pct": 7.65,
+     "redundancy_index": 0.0214,
+     "repeat_tasks": 327,
+     "total_tokens_input": 102153,
+     "total_tokens_output": 160193,
+     "total_tokens": 262346,
+     "avg_tokens_per_task": 643.0,
+     "avg_latency_ms": 3450.9,
+     "total_cost_usd": 2.709354,
+     "cost_per_success_usd": 0.007719,
+     "poisoned_injection_pct": 3.67,
+     "false_positive_memories": 42,
+     "avg_context_tokens": 160.4,
+     "tier_distribution": {
+      "private": 15,
+      "agent": 288,
+      "shared": 68,
+      "validated": 35,
+      "organizational": 2,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "k3",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 3,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k3-s2",
+    "seed": 2,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 355,
+     "success_rate_pct": 87.01,
+     "injection_rate_pct": 85.78,
+     "retrieval_precision_pct": 59.15,
+     "effective_reuse_rate_pct": 75.25,
+     "misled_rate_pct": 7.81,
+     "redundancy_index": 0.0241,
+     "repeat_tasks": 332,
+     "total_tokens_input": 101488,
+     "total_tokens_output": 155606,
+     "total_tokens": 257094,
+     "avg_tokens_per_task": 630.1,
+     "avg_latency_ms": 3361.8,
+     "total_cost_usd": 2.638554,
+     "cost_per_success_usd": 0.007433,
+     "poisoned_injection_pct": 4.5,
+     "false_positive_memories": 42,
+     "avg_context_tokens": 158.8,
+     "tier_distribution": {
+      "private": 12,
+      "agent": 289,
+      "shared": 73,
+      "validated": 33,
+      "organizational": 1,
+      "quarantined": 1
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "k3",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 3,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k3-s3",
+    "seed": 3,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 353,
+     "success_rate_pct": 86.52,
+     "injection_rate_pct": 85.29,
+     "retrieval_precision_pct": 60.37,
+     "effective_reuse_rate_pct": 74.75,
+     "misled_rate_pct": 7.29,
+     "redundancy_index": 0.0184,
+     "repeat_tasks": 326,
+     "total_tokens_input": 99373,
+     "total_tokens_output": 163215,
+     "total_tokens": 262588,
+     "avg_tokens_per_task": 643.6,
+     "avg_latency_ms": 3510.5,
+     "total_cost_usd": 2.746344,
+     "cost_per_success_usd": 0.00778,
+     "poisoned_injection_pct": 5.17,
+     "false_positive_memories": 39,
+     "avg_context_tokens": 153.6,
+     "tier_distribution": {
+      "private": 16,
+      "agent": 284,
+      "shared": 71,
+      "validated": 37,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "k3",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 3,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k3-s4",
+    "seed": 4,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 364,
+     "success_rate_pct": 89.22,
+     "injection_rate_pct": 83.33,
+     "retrieval_precision_pct": 61.45,
+     "effective_reuse_rate_pct": 76.96,
+     "misled_rate_pct": 4.85,
+     "redundancy_index": 0.0211,
+     "repeat_tasks": 331,
+     "total_tokens_input": 98735,
+     "total_tokens_output": 158283,
+     "total_tokens": 257018,
+     "avg_tokens_per_task": 629.9,
+     "avg_latency_ms": 3413.7,
+     "total_cost_usd": 2.67045,
+     "cost_per_success_usd": 0.007336,
+     "poisoned_injection_pct": 3.03,
+     "false_positive_memories": 30,
+     "avg_context_tokens": 152.1,
+     "tier_distribution": {
+      "private": 14,
+      "agent": 283,
+      "shared": 73,
+      "validated": 37,
+      "organizational": 1,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "k3",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 3,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k3-s5",
+    "seed": 5,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 349,
+     "success_rate_pct": 85.54,
+     "injection_rate_pct": 84.8,
+     "retrieval_precision_pct": 59.82,
+     "effective_reuse_rate_pct": 74.26,
+     "misled_rate_pct": 8.73,
+     "redundancy_index": 0.0063,
+     "repeat_tasks": 319,
+     "total_tokens_input": 100463,
+     "total_tokens_output": 158433,
+     "total_tokens": 258896,
+     "avg_tokens_per_task": 634.5,
+     "avg_latency_ms": 3416.6,
+     "total_cost_usd": 2.677884,
+     "cost_per_success_usd": 0.007673,
+     "poisoned_injection_pct": 6.02,
+     "false_positive_memories": 41,
+     "avg_context_tokens": 156.3,
+     "tier_distribution": {
+      "private": 19,
+      "agent": 287,
+      "shared": 68,
+      "validated": 31,
+      "organizational": 3,
+      "quarantined": 1
+     }
+    }
+   }
+  ],
+  "k5": [
+   {
+    "arm": {
+     "name": "k5",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 5,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k5-s1",
+    "seed": 1,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 351,
+     "success_rate_pct": 86.03,
+     "injection_rate_pct": 83.33,
+     "retrieval_precision_pct": 54.41,
+     "effective_reuse_rate_pct": 74.02,
+     "misled_rate_pct": 7.65,
+     "redundancy_index": 0.0214,
+     "repeat_tasks": 327,
+     "total_tokens_input": 104594,
+     "total_tokens_output": 160193,
+     "total_tokens": 264787,
+     "avg_tokens_per_task": 649.0,
+     "avg_latency_ms": 3451.0,
+     "total_cost_usd": 2.716677,
+     "cost_per_success_usd": 0.00774,
+     "poisoned_injection_pct": 3.67,
+     "false_positive_memories": 42,
+     "avg_context_tokens": 166.4,
+     "tier_distribution": {
+      "organizational": 2,
+      "agent": 289,
+      "private": 15,
+      "shared": 67,
+      "validated": 35,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "k5",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 5,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k5-s2",
+    "seed": 2,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 355,
+     "success_rate_pct": 87.01,
+     "injection_rate_pct": 85.78,
+     "retrieval_precision_pct": 57.19,
+     "effective_reuse_rate_pct": 75.49,
+     "misled_rate_pct": 7.78,
+     "redundancy_index": 0.0211,
+     "repeat_tasks": 332,
+     "total_tokens_input": 103497,
+     "total_tokens_output": 154985,
+     "total_tokens": 258482,
+     "avg_tokens_per_task": 633.5,
+     "avg_latency_ms": 3349.4,
+     "total_cost_usd": 2.635266,
+     "cost_per_success_usd": 0.007423,
+     "poisoned_injection_pct": 4.49,
+     "false_positive_memories": 42,
+     "avg_context_tokens": 163.7,
+     "tier_distribution": {
+      "private": 12,
+      "agent": 288,
+      "shared": 73,
+      "validated": 34,
+      "organizational": 1,
+      "quarantined": 1
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "k5",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 5,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k5-s3",
+    "seed": 3,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 352,
+     "success_rate_pct": 86.27,
+     "injection_rate_pct": 85.29,
+     "retrieval_precision_pct": 57.67,
+     "effective_reuse_rate_pct": 74.75,
+     "misled_rate_pct": 7.85,
+     "redundancy_index": 0.0184,
+     "repeat_tasks": 326,
+     "total_tokens_input": 102000,
+     "total_tokens_output": 162746,
+     "total_tokens": 264746,
+     "avg_tokens_per_task": 648.9,
+     "avg_latency_ms": 3501.4,
+     "total_cost_usd": 2.74719,
+     "cost_per_success_usd": 0.007805,
+     "poisoned_injection_pct": 6.04,
+     "false_positive_memories": 41,
+     "avg_context_tokens": 160.0,
+     "tier_distribution": {
+      "private": 15,
+      "agent": 285,
+      "shared": 73,
+      "validated": 35,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "k5",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 5,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k5-s4",
+    "seed": 4,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 364,
+     "success_rate_pct": 89.22,
+     "injection_rate_pct": 83.33,
+     "retrieval_precision_pct": 58.3,
+     "effective_reuse_rate_pct": 76.96,
+     "misled_rate_pct": 4.85,
+     "redundancy_index": 0.0211,
+     "repeat_tasks": 331,
+     "total_tokens_input": 101497,
+     "total_tokens_output": 158283,
+     "total_tokens": 259780,
+     "avg_tokens_per_task": 636.7,
+     "avg_latency_ms": 3414.3,
+     "total_cost_usd": 2.678736,
+     "cost_per_success_usd": 0.007359,
+     "poisoned_injection_pct": 3.03,
+     "false_positive_memories": 30,
+     "avg_context_tokens": 158.8,
+     "tier_distribution": {
+      "private": 14,
+      "agent": 281,
+      "shared": 73,
+      "validated": 39,
+      "organizational": 1,
+      "quarantined": 0
+     }
+    }
+   },
+   {
+    "arm": {
+     "name": "k5",
+     "use_memory": true,
+     "governance": true,
+     "k_inject": 5,
+     "similarity_threshold": 0.3,
+     "candidate_k": 10,
+     "token_budget": 1000,
+     "feedback_rate": 0.7
+    },
+    "run_id": "exp-ec245d71-k5-s5",
+    "seed": 5,
+    "metrics": {
+     "total_tasks": 408,
+     "successful_tasks": 349,
+     "success_rate_pct": 85.54,
+     "injection_rate_pct": 84.8,
+     "retrieval_precision_pct": 57.64,
+     "effective_reuse_rate_pct": 74.26,
+     "misled_rate_pct": 8.73,
+     "redundancy_index": 0.0063,
+     "repeat_tasks": 319,
+     "total_tokens_input": 102494,
+     "total_tokens_output": 158433,
+     "total_tokens": 260927,
+     "avg_tokens_per_task": 639.5,
+     "avg_latency_ms": 3416.5,
+     "total_cost_usd": 2.683977,
+     "cost_per_success_usd": 0.00769,
+     "poisoned_injection_pct": 6.02,
+     "false_positive_memories": 41,
+     "avg_context_tokens": 161.3,
+     "tier_distribution": {
+      "private": 19,
+      "agent": 286,
+      "shared": 66,
+      "validated": 33,
+      "organizational": 4,
+      "quarantined": 1
+     }
+    }
+   }
+  ]
+ }
+}

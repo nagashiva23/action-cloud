@@ -292,6 +292,9 @@ def get_llm(kind: str | None = None) -> LLM:
     kind = (kind or os.environ.get("LLM_PROVIDER", "mock")).lower()
     if kind == "mock":
         return MockLLM()
+    if kind in ("sim", "simulated"):
+        from .benchmark.simulator import SimulatedAgentLLM  # noqa: PLC0415
+        return SimulatedAgentLLM(seed=int(os.environ.get("SIM_SEED", "7")))
     if kind == "anthropic":
         return AnthropicLLM()
     if kind in ("gemini", "google"):

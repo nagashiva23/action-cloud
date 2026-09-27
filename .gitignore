@@ -9,9 +9,8 @@ venv/
 *.egg-info/
 .pytest_cache/
 
-# Experiment output (regenerate rather than version; add results/ back
-# deliberately once you have a final Phase 3 run worth keeping)
-results/
+# Experiment output: results/ IS versioned — it holds the run the README
+# cites (make experiment). Scratch runs: pass --out somewhere else.
 *.log
 
 # OS / editor

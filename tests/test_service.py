@@ -14,7 +14,8 @@ class TestMemorySelectionPolicy:
         pol = MemorySelectionPolicy()
         assert pol.candidate_k == 10
         assert pol.max_context_memories == 1
-        assert pol.similarity_threshold == 0.70
+        assert pol.similarity_threshold == 0.30
+        assert pol.min_confidence == 0.45
         assert pol.redundancy_threshold == 0.85
         assert pol.context_token_budget == 1000
         assert pol.min_tier == MemoryTier.PRIVATE

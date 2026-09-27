@@ -31,7 +31,8 @@ END $$;
 DO $$ BEGIN
     CREATE TYPE agent_role AS ENUM (
         'research', 'coding', 'testing',
-        'deployment', 'documentation', 'data_analysis'
+        'deployment', 'documentation', 'data_analysis',
+        'security', 'devops', 'database', 'ml', 'cloud', 'monitoring'
     );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;

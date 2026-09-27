@@ -1,18 +1,23 @@
-.PHONY: help setup up down reset api worker verify test logs psql clean
+.PHONY: help setup up down reset migrate api worker verify test logs psql mcp experiment fleet calibrate clean
 
 help:
-	@echo "ActionCloud — Phase 1"
+	@echo "ActionCloud"
 	@echo ""
 	@echo "  make setup     create venv + install dependencies"
 	@echo "  make up        start Postgres + LocalStack"
 	@echo "  make down      stop containers (keeps data)"
-	@echo "  make reset     stop AND wipe data (re-runs sql/001_init.sql)"
+	@echo "  make reset     stop AND wipe data (re-runs every sql/*.sql)"
+	@echo "  make migrate   apply sql/002 to an EXISTING database volume"
 	@echo "  make api       run the Agent Memory API   (terminal 1)"
 	@echo "  make worker    run the queue worker       (terminal 2)"
 	@echo "  make verify    run end-to-end verification (terminal 3)"
 	@echo "  make test      run unit tests"
 	@echo "  make logs      tail container logs"
 	@echo "  make psql      open a psql shell"
+	@echo "  make mcp       run the MCP stdio server"
+	@echo "  make experiment  run all evaluation presets (5 seeds) -> results/"
+	@echo "  make fleet     run the 12-role fleet simulation"
+	@echo "  make calibrate print similarity-threshold calibration"
 
 setup:
 	python3 -m venv .venv
@@ -38,6 +43,9 @@ reset:
 	@sleep 8
 	@docker compose ps
 
+migrate:
+	docker compose exec -T postgres psql -U actioncloud -d actioncloud -v ON_ERROR_STOP=1 < sql/002_fleet_roles_and_reuse_audit.sql
+
 api:
 	PYTHONPATH=src ./.venv/bin/uvicorn actioncloud.api:app --reload --port 8000
 
@@ -58,6 +66,15 @@ psql:
 
 mcp:
 	PYTHONPATH=src ./.venv/bin/python -m actioncloud.mcp_server
+
+experiment:
+	PYTHONPATH=src ./.venv/bin/python scripts/run_experiment.py --preset all --seeds 1,2,3,4,5
+
+fleet:
+	PYTHONPATH=src ./.venv/bin/python scripts/run_fleet_simulation.py
+
+calibrate:
+	PYTHONPATH=src ./.venv/bin/python scripts/calibrate_threshold.py
 
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true

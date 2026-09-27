@@ -95,6 +95,7 @@ def receive(max_messages: int = 10, wait_seconds: int = 20) -> list[dict[str, An
         QueueUrl=get_queue_url(),
         MaxNumberOfMessages=max_messages,
         WaitTimeSeconds=wait_seconds,
+        AttributeNames=["ApproximateReceiveCount"],
     )
     return resp.get("Messages", [])
 

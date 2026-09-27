@@ -66,7 +66,7 @@ def main() -> int:
     check("API reachable", True)
     check("database connected", health.get("database") is True,
           "Is Postgres up? `docker compose ps`")
-    check("queue reachable", health.get("queue") is True,
+    check("queue reachable (or not required in sync mode)", health.get("queue") is not False,
           "Is LocalStack up and healthy?")
     if failed:
         return 1
@@ -134,16 +134,24 @@ def main() -> int:
 
     # -- 5. Memory actually reaches the second agent -----------------------
     print("\n5. Memory-enabled arm")
+    # AGENT-tier memories are visible to agents of the SAME role; other roles
+    # only see them once promoted to SHARED by successful reuse.
+    other_role = client.search(query="Neo4j bolt connection Docker", limit=5,
+                               agent_id="research-verify", agent_role=AgentRole.RESEARCH)
+    check("other-role agent cannot see an unpromoted AGENT-tier memory",
+          not any(r.id == outcome.experience_id for r in other_role))
+
     agent_b = build_agent(
-        AgentRole.RESEARCH,
-        agent_id="research-verify",
+        AgentRole.CODING,
+        agent_id="coding-verify-b",
         client=client,
         run_id=run_id,
         use_memory=True,           # actioncloud arm
         llm=MockLLM(simulated_latency_ms=0),
     )
     outcome_b = agent_b.run_task(
-        TaskSpec(task="Fix Neo4j bolt connection failing in Docker", task_key="verify-probe")
+        TaskSpec(task="Fix Neo4j bolt connection failing in Docker", task_key="verify-probe",
+                 technologies=["neo4j", "docker"])
     )
     check(
         "second agent retrieved prior experience",

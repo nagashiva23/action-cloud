@@ -7,7 +7,7 @@ import time
 from typing import Any, Callable
 
 from . import db, queue
-from .schema import Experience, MemoryTier
+from .schema import Experience
 
 logging.basicConfig(
     level=logging.INFO,
@@ -32,66 +32,26 @@ signal.signal(signal.SIGTERM, _stop)
 # Handlers
 # --------------------------------------------------------------------------
 
-from .embeddings import get_embedding_provider
-from .extractor import ExperienceExtractor
-from .judge import MemoryJudge
+from pydantic import ValidationError
+
+from .pipeline import process_experience
+
+# After this many failed deliveries a message is dropped (and logged) instead
+# of being retried forever. On AWS, also attach a real dead-letter queue with a
+# redrive policy so dropped messages can be inspected.
+MAX_RECEIVES = int(__import__("os").environ.get("WORKER_MAX_RECEIVES", "5"))
+
+
+class PermanentError(Exception):
+    """Processing can never succeed for this payload; do not retry."""
 
 
 def handle_experience_created(payload: dict[str, Any]) -> None:
-    """
-    Phase 2 processing:
-      1. Assign initial tier and confidence via MemoryJudge.
-      2. Insert experience into DB.
-      3. Extract procedural workflow and knowledge triples via LLM out-of-band.
-      4. Generate text embedding vector.
-      5. Persist extractions & vector to DB.
-      6. Audit tier decision in tier_transitions.
-    """
-    exp = Experience(**payload)
-
-    tier, confidence, reason = MemoryJudge.assign_initial_tier(exp)
-    exp.tier = tier
-    exp.confidence = confidence
-
-    # 1. Primary insert (idempotent)
-    db.insert_experience(exp)
-
-    # 2. Extract workflow & knowledge triples via LLM
-    extractor = ExperienceExtractor()
-    workflow, triples = extractor.extract(exp)
-
-    # 3. Compute vector embedding
-    embedder = get_embedding_provider()
-    embedding_text = f"{exp.task} {exp.problem or ''} {exp.solution or ''} {exp.result}"
-    embedding = embedder.embed(embedding_text)
-
-    # 4. Save extractions & embedding
-    db.update_experience_extractions(
-        experience_id=exp.id,
-        workflow=workflow,
-        knowledge_triples=triples,
-        embedding=embedding,
-        embedded=True,
-    )
-
-    # 5. Record tier transition audit log
-    db.record_tier_transition(
-        experience_id=exp.id,
-        to_tier=tier,
-        reason=reason,
-        from_tier=None,
-        decided_by="memory_judge_v2",
-    )
-
-    log.info(
-        "stored & enriched %s | %s/%s | success=%s | tier=%s | %d tokens",
-        exp.id,
-        exp.agent_role.value,
-        exp.system.value,
-        exp.success,
-        tier.value,
-        exp.total_tokens,
-    )
+    try:
+        exp = Experience(**payload)
+    except ValidationError as e:
+        raise PermanentError(f"invalid experience payload: {e}") from e
+    process_experience(exp)
 
 
 HANDLERS: dict[str, Callable[[dict[str, Any]], None]] = {
@@ -126,8 +86,21 @@ def process_one(message: dict[str, Any]) -> bool:
     try:
         handler(payload)
         return True
+    except PermanentError:
+        log.exception("permanent failure for %s — discarding", event_type)
+        return True
     except Exception:  # noqa: BLE001
-        log.exception("handler failed for %s — leaving on queue for retry", event_type)
+        receives = int(message.get("Attributes", {}).get("ApproximateReceiveCount", "1"))
+        if receives >= MAX_RECEIVES:
+            log.exception(
+                "handler failed for %s on delivery %d/%d — giving up and discarding",
+                event_type, receives, MAX_RECEIVES,
+            )
+            return True
+        log.exception(
+            "handler failed for %s (delivery %d/%d) — leaving on queue for retry",
+            event_type, receives, MAX_RECEIVES,
+        )
         return False
 
 

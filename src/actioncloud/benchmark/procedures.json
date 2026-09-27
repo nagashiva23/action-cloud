@@ -1,0 +1,1265 @@
+{
+ "task-fastapi-jwt-auth": [
+  {
+   "step": "Read the token with the HTTPBearer security scheme",
+   "any": [
+    "httpbearer",
+    "bearer"
+   ]
+  },
+  {
+   "step": "Decode and verify the signature with jwt.decode using the secret and algorithm",
+   "any": [
+    "jwt.decode",
+    "decode"
+   ]
+  },
+  {
+   "step": "Reject expired or invalid tokens with HTTP 401",
+   "any": [
+    "401"
+   ]
+  },
+  {
+   "step": "Expose the check as a Depends() dependency returning the claims",
+   "any": [
+    "depends"
+   ]
+  }
+ ],
+ "task-sqs-retry-decorator": [
+  {
+   "step": "Wrap receive_message in a decorator using functools.wraps",
+   "any": [
+    "decorator",
+    "functools.wraps"
+   ]
+  },
+  {
+   "step": "Catch botocore ClientError and transient network errors",
+   "any": [
+    "clienterror"
+   ]
+  },
+  {
+   "step": "Sleep with exponential backoff base * 2**attempt plus jitter",
+   "any": [
+    "exponential",
+    "backoff"
+   ]
+  },
+  {
+   "step": "Stop after max_retries and re-raise the last error",
+   "any": [
+    "max_retries",
+    "re-raise",
+    "reraise"
+   ]
+  }
+ ],
+ "task-postgres-vector-search": [
+  {
+   "step": "Enable the vector extension with CREATE EXTENSION vector",
+   "any": [
+    "create extension"
+   ]
+  },
+  {
+   "step": "Create an HNSW index using vector_cosine_ops",
+   "any": [
+    "vector_cosine_ops",
+    "hnsw"
+   ]
+  },
+  {
+   "step": "Order by the cosine distance operator <=> with a LIMIT",
+   "any": [
+    "<=>"
+   ]
+  },
+  {
+   "step": "Pass the query embedding as a bound parameter, never string-formatted",
+   "any": [
+    "parameter",
+    "%s"
+   ]
+  }
+ ],
+ "task-pydantic-validation-schema": [
+  {
+   "step": "Subclass BaseModel with typed Field constraints",
+   "any": [
+    "basemodel"
+   ]
+  },
+  {
+   "step": "Use min_length and ge constraints on required fields",
+   "any": [
+    "min_length",
+    "ge="
+   ]
+  },
+  {
+   "step": "Normalise tags in a field_validator classmethod",
+   "any": [
+    "field_validator"
+   ]
+  },
+  {
+   "step": "Lowercase and dedupe tags while preserving order",
+   "any": [
+    "lowercase",
+    "dedupe"
+   ]
+  }
+ ],
+ "task-fastapi-cors-middleware": [
+  {
+   "step": "Add CORSMiddleware with app.add_middleware",
+   "any": [
+    "corsmiddleware",
+    "add_middleware"
+   ]
+  },
+  {
+   "step": "List explicit allow_origins instead of a wildcard",
+   "any": [
+    "allow_origins"
+   ]
+  },
+  {
+   "step": "Set allow_methods and allow_headers for the API",
+   "any": [
+    "allow_methods",
+    "allow_headers"
+   ]
+  },
+  {
+   "step": "Enable allow_credentials only with explicit origins",
+   "any": [
+    "allow_credentials"
+   ]
+  }
+ ],
+ "task-async-event-loop-pool": [
+  {
+   "step": "Create psycopg_pool AsyncConnectionPool with min_size and max_size",
+   "any": [
+    "asyncconnectionpool"
+   ]
+  },
+  {
+   "step": "Open the pool at startup with pool.open()",
+   "any": [
+    "pool.open"
+   ]
+  },
+  {
+   "step": "Borrow connections with async with pool.connection()",
+   "any": [
+    "pool.connection"
+   ]
+  },
+  {
+   "step": "Close the pool on shutdown with pool.close()",
+   "any": [
+    "pool.close"
+   ]
+  }
+ ],
+ "task-mcp-tool-definition": [
+  {
+   "step": "Declare the tool with name, description and a JSON Schema inputSchema",
+   "any": [
+    "inputschema"
+   ]
+  },
+  {
+   "step": "Return it from the tools/list handler",
+   "any": [
+    "tools/list"
+   ]
+  },
+  {
+   "step": "Dispatch tools/call by tool name to the search handler",
+   "any": [
+    "tools/call"
+   ]
+  },
+  {
+   "step": "Return results as content items of type text",
+   "any": [
+    "content",
+    "type text",
+    "\"text\""
+   ]
+  }
+ ],
+ "task-rate-limiting-middleware": [
+  {
+   "step": "Key the limiter by client IP or API key",
+   "any": [
+    "client ip",
+    "api key",
+    "key by"
+   ]
+  },
+  {
+   "step": "Track requests in a Redis sorted set with ZADD timestamps",
+   "any": [
+    "zadd",
+    "sorted set"
+   ]
+  },
+  {
+   "step": "Trim the window with ZREMRANGEBYSCORE and count with ZCARD",
+   "any": [
+    "zremrangebyscore",
+    "zcard"
+   ]
+  },
+  {
+   "step": "Return HTTP 429 with a Retry-After header when over the limit",
+   "any": [
+    "429"
+   ]
+  }
+ ],
+ "task-prometheus-metrics-exporter": [
+  {
+   "step": "Define a Counter for ingested experiences",
+   "any": [
+    "counter"
+   ]
+  },
+  {
+   "step": "Define a Histogram for retrieval latency",
+   "any": [
+    "histogram"
+   ]
+  },
+  {
+   "step": "Observe latency with the .time() context manager or observe()",
+   "any": [
+    ".time()",
+    "observe"
+   ]
+  },
+  {
+   "step": "Expose a /metrics endpoint with generate_latest",
+   "any": [
+    "generate_latest",
+    "/metrics"
+   ]
+  }
+ ],
+ "task-structlog-json-logging": [
+  {
+   "step": "Call structlog.configure once at startup",
+   "any": [
+    "structlog.configure"
+   ]
+  },
+  {
+   "step": "Add TimeStamper(fmt='iso') and add_log_level processors",
+   "any": [
+    "timestamper",
+    "add_log_level"
+   ]
+  },
+  {
+   "step": "Render with JSONRenderer as the final processor",
+   "any": [
+    "jsonrenderer"
+   ]
+  },
+  {
+   "step": "Bind request or message ids with contextvars",
+   "any": [
+    "contextvars",
+    "bind"
+   ]
+  }
+ ],
+ "task-governance-tier-hierarchy": [
+  {
+   "step": "Define ordered tiers from private up to organizational",
+   "any": [
+    "private",
+    "organizational"
+   ]
+  },
+  {
+   "step": "Enter new memories at the least-trusted tier",
+   "any": [
+    "least-trusted",
+    "least trusted",
+    "untrusted"
+   ]
+  },
+  {
+   "step": "Promote on counted successful reuse thresholds",
+   "any": [
+    "promote",
+    "promotion"
+   ]
+  },
+  {
+   "step": "Demote or quarantine on low reuse success and audit every transition",
+   "any": [
+    "demot",
+    "quarantine"
+   ]
+  }
+ ],
+ "task-sqs-decoupled-worker": [
+  {
+   "step": "API publishes an event to SQS and returns 202 Accepted",
+   "any": [
+    "202"
+   ]
+  },
+  {
+   "step": "Worker long-polls with WaitTimeSeconds",
+   "any": [
+    "waittimeseconds",
+    "long poll",
+    "long-poll"
+   ]
+  },
+  {
+   "step": "Make inserts idempotent for at-least-once delivery",
+   "any": [
+    "idempotent"
+   ]
+  },
+  {
+   "step": "Delete messages only after success and route failures to a dead-letter queue",
+   "any": [
+    "dead-letter",
+    "dead letter",
+    "dlq"
+   ]
+  }
+ ],
+ "task-vector-indexing-strategy": [
+  {
+   "step": "Use an HNSW index with m=16 and ef_construction=64",
+   "any": [
+    "ef_construction",
+    "m=16"
+   ]
+  },
+  {
+   "step": "Tune ef_search at query time",
+   "any": [
+    "ef_search"
+   ]
+  },
+  {
+   "step": "Choose vector_cosine_ops to match the distance operator",
+   "any": [
+    "vector_cosine_ops",
+    "cosine"
+   ]
+  },
+  {
+   "step": "Benchmark against exact search before scaling",
+   "any": [
+    "exact search",
+    "benchmark"
+   ]
+  }
+ ],
+ "task-mcp-integration-arch": [
+  {
+   "step": "Run the MCP server over stdio launched by the IDE",
+   "any": [
+    "stdio"
+   ]
+  },
+  {
+   "step": "Speak JSON-RPC 2.0 with initialize and tools/list",
+   "any": [
+    "json-rpc",
+    "initialize"
+   ]
+  },
+  {
+   "step": "Call MemoryService directly instead of an extra HTTP hop",
+   "any": [
+    "memoryservice"
+   ]
+  },
+  {
+   "step": "Keep stdout for protocol only and log to stderr",
+   "any": [
+    "stderr"
+   ]
+  }
+ ],
+ "task-multi-llm-provider-factory": [
+  {
+   "step": "Define a common LLM protocol with complete(prompt, system)",
+   "any": [
+    "protocol",
+    "interface",
+    "complete("
+   ]
+  },
+  {
+   "step": "Implement one adapter per provider: Anthropic, Gemini, Groq",
+   "any": [
+    "adapter",
+    "anthropic"
+   ]
+  },
+  {
+   "step": "Select the provider in a get_llm factory from an env variable",
+   "any": [
+    "factory",
+    "get_llm"
+   ]
+  },
+  {
+   "step": "Read token usage from each API response for cost tracking",
+   "any": [
+    "usage",
+    "token"
+   ]
+  }
+ ],
+ "task-psycopg-pool-timeout-debug": [
+  {
+   "step": "Reproduce the PoolTimeout under concurrent tests",
+   "any": [
+    "pooltimeout"
+   ]
+  },
+  {
+   "step": "Find connections not returned to the pool (missing context manager)",
+   "any": [
+    "not returned",
+    "leak",
+    "context manager"
+   ]
+  },
+  {
+   "step": "Raise max_size or lower concurrency to match the workload",
+   "any": [
+    "max_size"
+   ]
+  },
+  {
+   "step": "Close the pool in a fixture teardown",
+   "any": [
+    "teardown",
+    "fixture"
+   ]
+  }
+ ],
+ "task-pgvector-port-collision-debug": [
+  {
+   "step": "Confirm another Postgres already holds host port 5432 with lsof",
+   "any": [
+    "lsof",
+    "5432"
+   ]
+  },
+  {
+   "step": "Map the container to host port 5433 in docker-compose",
+   "any": [
+    "5433"
+   ]
+  },
+  {
+   "step": "Update DB_PORT in .env to the new port",
+   "any": [
+    "db_port"
+   ]
+  },
+  {
+   "step": "Verify with pg_isready or psql against the container",
+   "any": [
+    "pg_isready",
+    "psql"
+   ]
+  }
+ ],
+ "task-sqs-visibility-timeout-debug": [
+  {
+   "step": "Observe the same message processed twice",
+   "any": [
+    "twice",
+    "duplicate"
+   ]
+  },
+  {
+   "step": "Compare processing time with the queue VisibilityTimeout",
+   "any": [
+    "visibilitytimeout",
+    "visibility timeout"
+   ]
+  },
+  {
+   "step": "Raise the timeout above worst-case processing time",
+   "any": [
+    "raise",
+    "increase"
+   ]
+  },
+  {
+   "step": "Keep handlers idempotent since delivery is at-least-once",
+   "any": [
+    "idempotent"
+   ]
+  }
+ ],
+ "task-fastapi-cors-preflight-debug": [
+  {
+   "step": "Inspect the failing OPTIONS preflight request",
+   "any": [
+    "options",
+    "preflight"
+   ]
+  },
+  {
+   "step": "Register CORSMiddleware before routes handle requests",
+   "any": [
+    "corsmiddleware"
+   ]
+  },
+  {
+   "step": "Include the request origin in allow_origins",
+   "any": [
+    "allow_origins"
+   ]
+  },
+  {
+   "step": "Allow the requested method and headers in allow_methods",
+   "any": [
+    "allow_methods"
+   ]
+  }
+ ],
+ "task-pydantic-validation-error-debug": [
+  {
+   "step": "Read ValidationError.errors() to find the failing field",
+   "any": [
+    "errors()",
+    "validationerror"
+   ]
+  },
+  {
+   "step": "Compare the payload against required fields in the schema",
+   "any": [
+    "required"
+   ]
+  },
+  {
+   "step": "Make the field Optional with a default if it is truly optional",
+   "any": [
+    "optional",
+    "default"
+   ]
+  },
+  {
+   "step": "Return a 422 response with the error details",
+   "any": [
+    "422"
+   ]
+  }
+ ],
+ "task-review-memory-judge-promotion": [
+  {
+   "step": "Check promotion and demotion thresholds at their boundaries",
+   "any": [
+    "threshold",
+    "boundar"
+   ]
+  },
+  {
+   "step": "Lock the row with SELECT FOR UPDATE during read-decide-write",
+   "any": [
+    "for update"
+   ]
+  },
+  {
+   "step": "Ignore self-reported reuse from the author",
+   "any": [
+    "self-report",
+    "self report",
+    "author"
+   ]
+  },
+  {
+   "step": "Audit every transition in tier_transitions",
+   "any": [
+    "tier_transitions",
+    "audit"
+   ]
+  }
+ ],
+ "task-review-vector-embedding-extractor": [
+  {
+   "step": "Check the path taken when the LLM returns invalid output",
+   "any": [
+    "invalid output"
+   ]
+  },
+  {
+   "step": "Ensure the fallback produces real steps from the solution text",
+   "any": [
+    "steps"
+   ]
+  },
+  {
+   "step": "Strip markdown code fences before parsing",
+   "any": [
+    "code fence",
+    "```"
+   ]
+  },
+  {
+   "step": "Log a warning instead of failing ingestion",
+   "any": [
+    "warning",
+    "log"
+   ]
+  }
+ ],
+ "task-review-mcp-server-security": [
+  {
+   "step": "Never return stack traces or exception internals to the client",
+   "any": [
+    "stack trace",
+    "traceback"
+   ]
+  },
+  {
+   "step": "Return isError results for tool failures",
+   "any": [
+    "iserror"
+   ]
+  },
+  {
+   "step": "Validate tool arguments against the inputSchema",
+   "any": [
+    "validate",
+    "inputschema"
+   ]
+  },
+  {
+   "step": "Log full errors to stderr only",
+   "any": [
+    "stderr"
+   ]
+  }
+ ],
+ "task-review-api-exception-handlers": [
+  {
+   "step": "Register app.exception_handler for HTTPException and validation errors",
+   "any": [
+    "exception_handler"
+   ]
+  },
+  {
+   "step": "Return one error schema with code and message fields",
+   "any": [
+    "error schema",
+    "code",
+    "message"
+   ]
+  },
+  {
+   "step": "Map unexpected exceptions to 500 without internals",
+   "any": [
+    "500"
+   ]
+  },
+  {
+   "step": "Include a request id for correlation",
+   "any": [
+    "request id",
+    "request_id"
+   ]
+  }
+ ],
+ "task-review-benchmark-metrics-calc": [
+  {
+   "step": "Check each metric formula against its definition",
+   "any": [
+    "formula",
+    "definition"
+   ]
+  },
+  {
+   "step": "Ensure the Redundancy Index differs between baseline and memory arms",
+   "any": [
+    "redundancy"
+   ]
+  },
+  {
+   "step": "Count only relevant injected memories as reuse",
+   "any": [
+    "relevant",
+    "precision"
+   ]
+  },
+  {
+   "step": "Guard divisions by zero for empty runs",
+   "any": [
+    "division by zero",
+    "divide by zero",
+    "zero"
+   ]
+  }
+ ],
+ "task-sec-sql-injection-audit": [
+  {
+   "step": "List every query built with string formatting",
+   "any": [
+    "string formatting",
+    "f-string",
+    "format"
+   ]
+  },
+  {
+   "step": "Replace them with bound parameters (%s placeholders)",
+   "any": [
+    "bound parameter",
+    "%s",
+    "placeholder"
+   ]
+  },
+  {
+   "step": "Cast the vector parameter server-side with ::vector",
+   "any": [
+    "::vector"
+   ]
+  },
+  {
+   "step": "Add a test with a malicious payload like ' OR 1=1",
+   "any": [
+    "or 1=1",
+    "malicious"
+   ]
+  }
+ ],
+ "task-sec-api-key-auth": [
+  {
+   "step": "Read the key from an X-API-Key header via APIKeyHeader",
+   "any": [
+    "x-api-key",
+    "apikeyheader"
+   ]
+  },
+  {
+   "step": "Compare with secrets.compare_digest in constant time",
+   "any": [
+    "compare_digest"
+   ]
+  },
+  {
+   "step": "Load valid keys from environment variables",
+   "any": [
+    "environment"
+   ]
+  },
+  {
+   "step": "Return 401 for missing or wrong keys",
+   "any": [
+    "401"
+   ]
+  }
+ ],
+ "task-sec-sensitive-data-scrubbing": [
+  {
+   "step": "Define regex patterns for API keys, JWTs and passwords",
+   "any": [
+    "regex",
+    "re.compile"
+   ]
+  },
+  {
+   "step": "Replace matches with a [REDACTED] marker",
+   "any": [
+    "redacted"
+   ]
+  },
+  {
+   "step": "Scrub task, action and result before storage",
+   "any": [
+    "before storage",
+    "before storing",
+    "before persist"
+   ]
+  },
+  {
+   "step": "Unit-test the scrubber against sample secrets",
+   "any": [
+    "test"
+   ]
+  }
+ ],
+ "task-sec-mcp-command-injection": [
+  {
+   "step": "Confirm handlers never pass input to subprocess or shell=True",
+   "any": [
+    "subprocess",
+    "shell=true"
+   ]
+  },
+  {
+   "step": "Treat query strings as data bound into SQL parameters",
+   "any": [
+    "parameter"
+   ]
+  },
+  {
+   "step": "Validate argument types and lengths against the schema",
+   "any": [
+    "validate"
+   ]
+  },
+  {
+   "step": "Reject unknown tool names with an error",
+   "any": [
+    "unknown tool"
+   ]
+  }
+ ],
+ "task-sec-dependency-vulnerability-scan": [
+  {
+   "step": "Run pip-audit against requirements.txt",
+   "any": [
+    "pip-audit"
+   ]
+  },
+  {
+   "step": "Triage each CVE by severity and reachability",
+   "any": [
+    "cve",
+    "severity"
+   ]
+  },
+  {
+   "step": "Upgrade or pin fixed versions",
+   "any": [
+    "upgrade",
+    "pin"
+   ]
+  },
+  {
+   "step": "Add the audit to CI to fail on new vulnerabilities",
+   "any": [
+    "ci"
+   ]
+  }
+ ],
+ "task-docker-pgvector-setup": [
+  {
+   "step": "Switch the image to pgvector/pgvector:pg16",
+   "any": [
+    "pgvector/pgvector"
+   ]
+  },
+  {
+   "step": "Run CREATE EXTENSION IF NOT EXISTS vector in the init SQL",
+   "any": [
+    "create extension"
+   ]
+  },
+  {
+   "step": "Recreate the volume so init scripts rerun (docker compose down -v)",
+   "any": [
+    "down -v",
+    "volume"
+   ]
+  },
+  {
+   "step": "Verify with SELECT extname FROM pg_extension",
+   "any": [
+    "pg_extension"
+   ]
+  }
+ ],
+ "task-localstack-healthcheck": [
+  {
+   "step": "Add a healthcheck to the localstack service in docker-compose",
+   "any": [
+    "healthcheck"
+   ]
+  },
+  {
+   "step": "Probe curl -sf http://localhost:4566/_localstack/health",
+   "any": [
+    "_localstack/health",
+    "4566"
+   ]
+  },
+  {
+   "step": "Set interval, timeout and retries",
+   "any": [
+    "interval",
+    "retries"
+   ]
+  },
+  {
+   "step": "Make dependents wait with depends_on condition service_healthy",
+   "any": [
+    "service_healthy",
+    "depends_on"
+   ]
+  }
+ ],
+ "task-dockerfile-multi-stage-build": [
+  {
+   "step": "Build wheels in a builder stage FROM python:3.11 AS builder",
+   "any": [
+    "as builder",
+    "builder stage"
+   ]
+  },
+  {
+   "step": "Copy only installed packages into a slim runtime stage",
+   "any": [
+    "slim"
+   ]
+  },
+  {
+   "step": "Run as a non-root user",
+   "any": [
+    "non-root",
+    "useradd",
+    "user "
+   ]
+  },
+  {
+   "step": "Start with uvicorn in CMD",
+   "any": [
+    "uvicorn"
+   ]
+  }
+ ],
+ "task-doc-mcp-setup-runbook": [
+  {
+   "step": "Show the mcpServers JSON block with command and args",
+   "any": [
+    "mcpservers"
+   ]
+  },
+  {
+   "step": "Set PYTHONPATH and DATABASE_URL in the env block",
+   "any": [
+    "database_url"
+   ]
+  },
+  {
+   "step": "Explain how to verify the tools appear in the client",
+   "any": [
+    "verify"
+   ]
+  },
+  {
+   "step": "List common failures such as a wrong python path",
+   "any": [
+    "troubleshoot",
+    "common failure"
+   ]
+  }
+ ],
+ "task-doc-governance-adr": [
+  {
+   "step": "State the context and the problem being decided",
+   "any": [
+    "context"
+   ]
+  },
+  {
+   "step": "Record the decision with the tier thresholds",
+   "any": [
+    "decision"
+   ]
+  },
+  {
+   "step": "List alternatives considered and why they were rejected",
+   "any": [
+    "alternatives"
+   ]
+  },
+  {
+   "step": "Describe consequences and follow-up work",
+   "any": [
+    "consequences"
+   ]
+  }
+ ],
+ "task-da-token-savings-analysis": [
+  {
+   "step": "Pair tasks across arms by task id",
+   "any": [
+    "pair"
+   ]
+  },
+  {
+   "step": "Compute per-task token differences",
+   "any": [
+    "difference"
+   ]
+  },
+  {
+   "step": "Bootstrap a 95% confidence interval",
+   "any": [
+    "bootstrap"
+   ]
+  },
+  {
+   "step": "Report the effect size alongside the mean",
+   "any": [
+    "effect size"
+   ]
+  }
+ ],
+ "task-da-success-rate-significance": [
+  {
+   "step": "Build the paired success table per task",
+   "any": [
+    "paired"
+   ]
+  },
+  {
+   "step": "Apply McNemar's test to discordant pairs",
+   "any": [
+    "mcnemar"
+   ]
+  },
+  {
+   "step": "Report the p-value with the sample size",
+   "any": [
+    "p-value"
+   ]
+  },
+  {
+   "step": "Correct for multiple comparisons across arms",
+   "any": [
+    "multiple comparison",
+    "bonferroni"
+   ]
+  }
+ ],
+ "task-db-experiences-index-tuning": [
+  {
+   "step": "Capture the slow query with EXPLAIN ANALYZE",
+   "any": [
+    "explain analyze"
+   ]
+  },
+  {
+   "step": "Add a composite index matching the filter columns",
+   "any": [
+    "composite index"
+   ]
+  },
+  {
+   "step": "Refresh planner statistics with a plain ANALYZE run",
+   "any": [
+    "planner statistics"
+   ]
+  },
+  {
+   "step": "Confirm an index scan replaced the sequential scan",
+   "any": [
+    "index scan"
+   ]
+  }
+ ],
+ "task-db-enum-migration": [
+  {
+   "step": "Use ALTER TYPE ... ADD VALUE IF NOT EXISTS",
+   "any": [
+    "alter type",
+    "add value"
+   ]
+  },
+  {
+   "step": "Keep the migration idempotent so reruns are safe",
+   "any": [
+    "idempotent"
+   ]
+  },
+  {
+   "step": "Number the file so it runs after the initial schema",
+   "any": [
+    "002",
+    "number"
+   ]
+  },
+  {
+   "step": "Insert a row with a new value to verify",
+   "any": [
+    "insert"
+   ]
+  }
+ ],
+ "task-ml-embedding-model-eval": [
+  {
+   "step": "Build labelled pairs of same-task paraphrases",
+   "any": [
+    "labelled",
+    "labeled"
+   ]
+  },
+  {
+   "step": "Embed queries and memories with each model",
+   "any": [
+    "embed"
+   ]
+  },
+  {
+   "step": "Measure precision@1 on the held-out set",
+   "any": [
+    "precision@1"
+   ]
+  },
+  {
+   "step": "Pick the similarity threshold from the score distributions",
+   "any": [
+    "threshold"
+   ]
+  }
+ ],
+ "task-ml-threshold-calibration": [
+  {
+   "step": "Collect scores for matching and non-matching pairs",
+   "any": [
+    "non-matching"
+   ]
+  },
+  {
+   "step": "Tabulate recall against false-positive rate",
+   "any": [
+    "false-positive",
+    "false positive"
+   ]
+  },
+  {
+   "step": "Select the cutoff at the chosen operating point",
+   "any": [
+    "operating point"
+   ]
+  },
+  {
+   "step": "Re-calibrate whenever the embedding model changes",
+   "any": [
+    "re-calibrate",
+    "recalibrate"
+   ]
+  }
+ ],
+ "task-cloud-ecs-fargate-deploy": [
+  {
+   "step": "Push images to ECR",
+   "any": [
+    "ecr"
+   ]
+  },
+  {
+   "step": "Define separate task definitions for API and worker",
+   "any": [
+    "task definition"
+   ]
+  },
+  {
+   "step": "Grant an IAM task role with least-privilege SQS access",
+   "any": [
+    "iam"
+   ]
+  },
+  {
+   "step": "Put the API behind an application load balancer with health checks",
+   "any": [
+    "load balancer",
+    "alb"
+   ]
+  }
+ ],
+ "task-cloud-rds-pgvector": [
+  {
+   "step": "Create an RDS PostgreSQL 16 instance in private subnets",
+   "any": [
+    "private subnet"
+   ]
+  },
+  {
+   "step": "Enable the extension with CREATE EXTENSION vector",
+   "any": [
+    "create extension"
+   ]
+  },
+  {
+   "step": "Store credentials in Secrets Manager",
+   "any": [
+    "secrets manager"
+   ]
+  },
+  {
+   "step": "Restrict access with a security group from the app tasks only",
+   "any": [
+    "security group"
+   ]
+  }
+ ],
+ "task-mon-queue-depth-alert": [
+  {
+   "step": "Export ApproximateNumberOfMessagesVisible as a metric",
+   "any": [
+    "approximatenumberofmessagesvisible"
+   ]
+  },
+  {
+   "step": "Alert when depth stays high for several minutes",
+   "any": [
+    "several minutes"
+   ]
+  },
+  {
+   "step": "Link the alert to a runbook",
+   "any": [
+    "runbook"
+   ]
+  },
+  {
+   "step": "Also alert on messages dropped after max receives",
+   "any": [
+    "dropped"
+   ]
+  }
+ ],
+ "task-mon-retrieval-latency-slo": [
+  {
+   "step": "Record request latency in a Prometheus bucketed metric",
+   "any": [
+    "bucketed"
+   ]
+  },
+  {
+   "step": "Compute p95 with histogram_quantile",
+   "any": [
+    "histogram_quantile"
+   ]
+  },
+  {
+   "step": "Set the SLO target and error budget",
+   "any": [
+    "error budget"
+   ]
+  },
+  {
+   "step": "Alert on fast and slow burn rates",
+   "any": [
+    "burn rate"
+   ]
+  }
+ ]
+}
