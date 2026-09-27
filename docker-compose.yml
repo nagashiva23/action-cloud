@@ -27,7 +27,7 @@ services:
       # baffling `role "actioncloud" does not exist` even though the role plainly
       # exists inside the container. Left side is the host, right side is the
       # container, which is unchanged.
-      - "5433:5432"
+      - "${DB_PORT:-5433}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       # Files in this directory run automatically on first boot, in filename

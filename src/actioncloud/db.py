@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import atexit
 import uuid
 from contextlib import contextmanager
 import json
@@ -24,6 +25,9 @@ def get_pool() -> ConnectionPool:
     """Lazily create the pool so importing this module never opens a socket."""
     global _pool
     if _pool is None:
+        # Close on interpreter exit; otherwise the pool's worker threads make
+        # every script and test run hang ~5 s at shutdown.
+        atexit.register(close_pool)
         _pool = ConnectionPool(
             settings.dsn,
             min_size=1,
