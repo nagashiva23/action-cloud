@@ -356,6 +356,8 @@ make calibrate      # retrieval threshold calibration
 
 ## Development
 
+For how the project was built phase by phase, and why it looks the way it does, see [IMPLEMENTATION.md](IMPLEMENTATION.md).
+
 ```bash
 make test       # 105 tests; database tests skip cleanly if Postgres is down
 make verify     # end-to-end check against a running API (make api)
