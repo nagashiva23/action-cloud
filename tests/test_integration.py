@@ -221,3 +221,19 @@ def test_ann_mode_matches_exact_on_small_store(svc, run_id):
                                   role=AgentRole.CODING, technologies=["postgres", "pgvector"],
                                   scope_run_id=run_id, policy=MemorySelectionPolicy(ann_candidates=ann))
         assert res["injected_experience_ids"] == [str(eid)]
+
+
+def test_ann_mode_falls_back_when_neighbours_are_invisible(run_id):
+    """Index neighbours all belong to someone else -> exact fallback still finds the visible one."""
+    from actioncloud import db
+    from actioncloud.embeddings import experience_embedding_text, get_embedding_provider
+
+    svc = MemoryService(sync_write=True)
+    mine = svc.store_experience(_create(run_id, task="Rotate the RDS master password with Secrets Manager",
+                                        technologies=["aws", "rds"], task_key="rds"))["id"]
+    vec = get_embedding_provider().embed(experience_embedding_text(
+        "Rotate the RDS master password with Secrets Manager", ["aws", "rds"]))
+    rows = db.hybrid_search_experiences("Rotate the RDS master password with Secrets Manager", vec,
+                                        limit=5, agent_id="author", agent_role="coding",
+                                        ann_candidates=1)   # top-1 neighbour may be anyone's
+    assert str(mine) in {str(r["id"]) for r in rows}

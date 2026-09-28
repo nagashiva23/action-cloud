@@ -599,14 +599,21 @@ def hybrid_search_experiences(
     if not query_vector:
         return search_experiences(query, limit, min_tier, agent_id, agent_role, scope_run_id)
     params = _params(query, limit, min_tier, agent_id, agent_role, scope_run_id, query_vector)
+    # Scoped queries (one run / experiment) are small: score them exactly. The
+    # index is global, so its nearest neighbours may all lie outside the scope.
+    use_ann = ann_candidates > 0 and scope_run_id is None
     with get_conn() as conn, conn.cursor() as cur:
-        if ann_candidates > 0:
+        rows = []
+        if use_ann:
             params["ann_k"] = ann_candidates
             cur.execute(f"SET LOCAL hnsw.ef_search = {min(1000, max(40, int(ann_candidates)))}")
             cur.execute(HYBRID_ANN_SQL, params)
-        else:
+            rows = cur.fetchall()
+        if not rows:
+            # Exact mode, or the index's neighbours were all invisible to this
+            # caller (pgvector < 0.8 filters after the index scan): fall back.
             cur.execute(HYBRID_SEARCH_SQL, params)
-        rows = cur.fetchall()
+            rows = cur.fetchall()
         conn.commit()
         return _strip(rows)
 

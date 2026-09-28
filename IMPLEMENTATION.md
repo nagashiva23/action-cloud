@@ -137,6 +137,8 @@ A full code review. Each bug was reproduced before it was fixed.
   - latency and scaling measured on real Postgres.
 - **Author reputation** (`MEMORY_AUTHOR_PRIOR`, migration `004`): a new memory's prior comes from its author's record. It's off by default: it helps a little under attack but costs about 3 points of success in an honest fleet.
 - **Index-backed retrieval** (`MEMORY_ANN_CANDIDATES`): HNSW pre-selection. 17 ms instead of 1.25 s at 50,000 memories, with the same injected memory as exact search in all 300 test queries.
+  - Run-scoped queries use exact scoring.
+  - If none of the index's neighbours are visible to the caller, it falls back to exact scoring. A test on a large shared database exposed this case: the index returned only other runs' memories, so nothing was injected.
 
 ---
 
@@ -198,7 +200,7 @@ Every migration after `001` is idempotent; `make migrate` applies them all.
 | `test_auth.py` | Each attack against the live REST API, admin endpoints, MCP binding |
 | `test_evaluation.py` | Dataset integrity, verifier, simulator, metric definitions, MCP protocol, worker poison handling |
 
-105 tests in total (`make test`). Database tests skip in under a second when Postgres is down.
+106 tests in total (`make test`). Database tests skip in under a second when Postgres is down.
 
 ---
 

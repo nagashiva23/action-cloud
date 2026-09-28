@@ -80,7 +80,7 @@ graph LR
 git clone https://github.com/nagashiva23/action-cloud.git && cd action-cloud
 make setup          # virtualenv + dependencies; creates .env from .env.example
 make up             # Postgres 16 + pgvector and LocalStack (SQS)
-make test           # 105 tests
+make test           # 106 tests
 ```
 
 **Run the API** (in-request writes, so no worker is needed):
@@ -288,7 +288,7 @@ All settings are environment variables; see [`.env.example`](.env.example).
 | `MEMORY_MIN_CONFIDENCE` | `0.45` | Confidence floor for injection |
 | `MEMORY_CONTEXT_TOKEN_BUDGET` | `1000` | Hard cap on context size |
 | `MEMORY_CANDIDATE_K` / `MEMORY_REDUNDANCY_THRESHOLD` / `MEMORY_TRUST_WEIGHT` | `10` / `0.85` / `0.10` | Candidate pool, duplicate cutoff, trust ranking bonus |
-| `MEMORY_ANN_CANDIDATES` | `0` | `0` = exact scoring of every visible memory; `N` = HNSW pre-selects `N` nearest neighbours first. Use about `200` beyond a few thousand memories |
+| `MEMORY_ANN_CANDIDATES` | `0` | `0` = exact scoring of every visible memory; `N` = HNSW pre-selects `N` nearest neighbours first. Use about `200` beyond a few thousand memories. Run-scoped queries, and queries whose neighbours are all invisible to the caller, fall back to exact scoring |
 | `MEMORY_AUTHOR_PRIOR` | `false` | Start a new memory's confidence from its author's track record (see *Author reputation*) |
 | **Models** | | |
 | `LLM_PROVIDER` | `mock` | Extraction and benchmark agents: `sim`, `mock`, `anthropic`, `gemini`, `groq` |
@@ -359,7 +359,7 @@ make calibrate      # retrieval threshold calibration
 For how the project was built phase by phase, and why it looks the way it does, see [IMPLEMENTATION.md](IMPLEMENTATION.md).
 
 ```bash
-make test       # 105 tests; database tests skip cleanly if Postgres is down
+make test       # 106 tests; database tests skip cleanly if Postgres is down
 make verify     # end-to-end check against a running API (make api)
 make mcp        # run the MCP server on stdio
 make migrate    # apply sql/002+ to an existing database
